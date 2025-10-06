@@ -1,0 +1,10 @@
+{
+  "name": "passwords",
+  "version": "dev. 25w41",
+  "description": "Protect your secrets, sometimes even from yourself.",
+  "scripts": {
+    "types": "cd client && bun tsc && cd ../server && bun tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
