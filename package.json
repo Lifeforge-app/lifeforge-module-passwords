@@ -3,8 +3,23 @@
   "version": "dev. 25w41",
   "description": "Protect your secrets, sometimes even from yourself.",
   "scripts": {
-    "types": "cd client && bun tsc && cd ../server && bun tsc"
+    "types": "cd client && bun tsc"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@iconify/react": "^6.0.2",
+    "@tanstack/react-query": "^5.90.2",
+    "@uidotdev/usehooks": "^2.4.1",
+    "bcryptjs": "^3.0.2",
+    "clsx": "^2.1.1",
+    "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.18",
+    "lifeforge-ui": "workspace:*",
+    "react-i18next": "^16.0.0",
+    "react-toastify": "^11.0.5",
+    "shared": "workspace:*",
+    "uuid": "^13.0.0",
+    "vite": "^7.1.9",
+    "zod": "^4.1.12"
+  },
   "devDependencies": {}
 }
