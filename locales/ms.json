@@ -19,9 +19,9 @@
     "password": "Kata Laluan"
   },
   "empty": {
-    "password": {
+    "passwords": {
       "title": "Tiada Kata Laluan",
-      "description": "Anda belum menambah sebarang kata laluan lagi. Klik butang di bawah untuk menambah satu."
+      "description": "Anda belum menambah sebarang kata laluan lagi. Klik butang di atas untuk menambah satu."
     },
     "search": {
       "title": "Tiada Entri Ditemui",

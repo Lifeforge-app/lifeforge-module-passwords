@@ -19,9 +19,9 @@
     "password": "密码"
   },
   "empty": {
-    "password": {
+    "passwords": {
       "title": "没有密码",
-      "description": "您还没有添加任何密码。点击下面的按钮添加一个。"
+      "description": "您还没有添加任何密码。点击上面的按钮添加一个。"
     },
     "search": {
       "title": "未找到条目",

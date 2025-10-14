@@ -19,9 +19,9 @@
     "password": "Password"
   },
   "empty": {
-    "password": {
+    "passwords": {
       "title": "No Passwords",
-      "description": "You haven't added any passwords yet. Click the button below to add one."
+      "description": "You haven't added any passwords yet. Click the button above to add one."
     },
     "search": {
       "title": "No Entries Found",

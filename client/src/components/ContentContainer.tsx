@@ -116,12 +116,6 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
         {() =>
           filteredPasswordList.length === 0 ? (
             <EmptyStateScreen
-              CTAButtonProps={{
-                onClick: handleCreatePassword,
-                tProps: { item: t('items.password') },
-                icon: 'tabler:plus',
-                children: 'new'
-              }}
               icon="tabler:key-off"
               name={passwordListQuery.data?.length ? 'search' : 'passwords'}
               namespace="apps.passwords"
