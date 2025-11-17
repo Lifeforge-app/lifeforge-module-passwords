@@ -19,13 +19,23 @@ setTimeout(() => {
 
 const getChallenge = forgeController
   .query()
-  .description('Get current challenge for password operations')
+  .description({
+    en: 'Retrieve challenge token for password encryption',
+    ms: 'Dapatkan token cabaran untuk penyulitan kata laluan',
+    'zh-CN': '获取密码加密的挑战令牌',
+    'zh-TW': '獲取密碼加密的挑戰令牌'
+  })
   .input({})
   .callback(async () => challenge)
 
 const list = forgeController
   .query()
-  .description('Get all password entries')
+  .description({
+    en: 'Get all password entries with sorting',
+    ms: 'Dapatkan semua entri kata laluan dengan penyusunan',
+    'zh-CN': '获取所有密码条目并排序',
+    'zh-TW': '獲取所有密碼條目並排序'
+  })
   .input({})
   .callback(({ pb }) =>
     pb.getFullList
@@ -46,7 +56,12 @@ const list = forgeController
 
 const create = forgeController
   .mutation()
-  .description('Create a new password entry')
+  .description({
+    en: 'Create a new encrypted password entry',
+    ms: 'Cipta entri kata laluan tersulitkan baharu',
+    'zh-CN': '创建新的加密密码条目',
+    'zh-TW': '創建新的加密密碼條目'
+  })
   .input({
     body: SCHEMAS.passwords.entries.schema
       .omit({
@@ -82,7 +97,12 @@ const create = forgeController
 
 const update = forgeController
   .mutation()
-  .description('Update a password entry')
+  .description({
+    en: 'Update an existing password entry',
+    ms: 'Kemas kini entri kata laluan sedia ada',
+    'zh-CN': '更新现有的密码条目',
+    'zh-TW': '更新現有的密碼條目'
+  })
   .input({
     query: z.object({
       id: z.string()
@@ -124,7 +144,12 @@ const update = forgeController
 
 const decrypt = forgeController
   .mutation()
-  .description('Decrypt a password entry')
+  .description({
+    en: 'Decrypt and retrieve a password entry.',
+    ms: 'Nyahsulitkan dan dapatkan entri kata laluan',
+    'zh-CN': '解密并检索密码条目',
+    'zh-TW': '解密並檢索密碼條目'
+  })
   .input({
     query: z.object({
       id: z.string(),
@@ -152,7 +177,12 @@ const decrypt = forgeController
 
 const remove = forgeController
   .mutation()
-  .description('Delete a password entry')
+  .description({
+    en: 'Delete a password entry',
+    ms: 'Padam entri kata laluan',
+    'zh-CN': '删除密码条目',
+    'zh-TW': '刪除密碼條目'
+  })
   .input({
     query: z.object({
       id: z.string()
@@ -168,7 +198,12 @@ const remove = forgeController
 
 const togglePin = forgeController
   .mutation()
-  .description('Toggle pin status of a password entry')
+  .description({
+    en: 'Toggle pin status of a password entry',
+    ms: 'Togol status pin entri kata laluan',
+    'zh-CN': '切换密码条目的固定状态',
+    'zh-TW': '切換密碼條目的固定狀態'
+  })
   .input({
     query: z.object({
       id: z.string()

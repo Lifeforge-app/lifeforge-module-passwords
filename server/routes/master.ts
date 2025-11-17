@@ -12,13 +12,23 @@ setTimeout(() => {
 
 const getChallenge = forgeController
   .query()
-  .description('Get current challenge for master password operations')
+  .description({
+    en: 'Retrieve challenge token for master password authentication',
+    ms: 'Dapatkan token cabaran untuk pengesahan kata laluan induk',
+    'zh-CN': '获取主密码身份验证的挑战令牌',
+    'zh-TW': '獲取主密碼身份驗證的挑戰令牌'
+  })
   .input({})
   .callback(async () => challenge)
 
 const create = forgeController
   .mutation()
-  .description('Create a new master password')
+  .description({
+    en: 'Create a new master password',
+    ms: 'Cipta kata laluan induk baharu',
+    'zh-CN': '创建新的主密码',
+    'zh-TW': '創建新的主密碼'
+  })
   .input({
     body: z.object({
       password: z.string()
@@ -40,7 +50,12 @@ const create = forgeController
 
 const verify = forgeController
   .mutation()
-  .description('Verify master password')
+  .description({
+    en: 'Verify master password against stored hash',
+    ms: 'Sahkan kata laluan induk terhadap hash yang disimpan',
+    'zh-CN': '验证主密码与存储的哈希值',
+    'zh-TW': '驗證主密碼與存儲的哈希值'
+  })
   .input({
     body: z.object({
       password: z.string()
@@ -61,7 +76,12 @@ const verify = forgeController
 
 const validateOTP = forgeController
   .mutation()
-  .description('Validate OTP for master password operations')
+  .description({
+    en: 'Validate OTP for master password operations',
+    ms: 'Sahkan OTP untuk operasi kata laluan induk',
+    'zh-CN': '验证主密码操作的一次性密码',
+    'zh-TW': '驗證主密碼操作的一次性密碼'
+  })
   .input({
     body: z.object({
       otp: z.string(),
