@@ -33,6 +33,7 @@
     "copyPassword": "複製密碼",
     "rotatePassword": "旋轉密碼",
     "showPassword": "顯示密碼",
-    "hidePassword": "隱藏密碼"
+    "hidePassword": "隱藏密碼",
+    "exportToCsv": "導出為CSV"
   }
 }

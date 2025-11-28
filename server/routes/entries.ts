@@ -13,7 +13,7 @@ import { getDecryptedMaster } from '../utils/getDecryptedMaster'
 
 export let challenge = v4()
 
-setTimeout(() => {
+setInterval(() => {
   challenge = v4()
 }, 1000 * 60)
 
@@ -227,6 +227,38 @@ const togglePin = forgeController
       .execute()
   })
 
+
+const exportEntries = forgeController
+  .mutation()
+  .description({
+    en: 'Export all password entries decrypted',
+    ms: 'Eksport semua entri kata laluan yang dinyahsulit',
+    'zh-CN': '导出所有解密的密码条目',
+    'zh-TW': '導出所有解密的密碼條目'
+  })
+  .input({
+    body: z.object({
+      master: z.string()
+    })
+  })
+  .callback(async ({ pb, body: { master } }) => {
+    const decryptedMaster = await getDecryptedMaster(pb, master, challenge)
+
+    const entries = await pb.getFullList.collection('passwords__entries').execute()
+
+    return entries.map(entry => {
+      const decryptedPassword = _decrypt(
+        Buffer.from(entry.password, 'base64'),
+        decryptedMaster
+      )
+
+      return {
+        ...entry,
+        password: decryptedPassword.toString()
+      }
+    })
+  })
+
 export default forgeRouter({
   getChallenge,
   list,
@@ -234,5 +266,6 @@ export default forgeRouter({
   update,
   decrypt,
   remove,
-  togglePin
+  togglePin,
+  exportEntries
 })

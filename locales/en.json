@@ -33,6 +33,7 @@
     "copyPassword": "Copy Password",
     "rotatePassword": "Rotate Password",
     "showPassword": "Show Password",
-    "hidePassword": "Hide Password"
+    "hidePassword": "Hide Password",
+    "exportToCsv": "Export to CSV"
   }
 }

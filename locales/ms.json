@@ -33,6 +33,7 @@
     "copyPassword": "Salin Kata Laluan",
     "rotatePassword": "Putar Kata Laluan",
     "showPassword": "Tunjukkan Kata Laluan",
-    "hidePassword": "Sembunyikan Kata Laluan"
+    "hidePassword": "Sembunyikan Kata Laluan",
+    "exportToCsv": "Eksport ke CSV"
   }
 }

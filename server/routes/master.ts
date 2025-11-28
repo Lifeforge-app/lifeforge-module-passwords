@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import z from 'zod'
 
 let challenge = v4()
-setTimeout(() => {
+setInterval(() => {
   challenge = v4()
 }, 1000 * 60)
 
@@ -37,7 +37,9 @@ const create = forgeController
   .callback(async ({ pb, body: { password } }) => {
     const salt = await bcrypt.genSalt(10)
 
-    const masterPasswordHash = await bcrypt.hash(password, salt)
+    const decryptedMaster = decrypt2(password, challenge)
+
+    const masterPasswordHash = await bcrypt.hash(decryptedMaster, salt)
 
     await pb.update
       .collection('user__users')
