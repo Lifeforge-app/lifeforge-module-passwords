@@ -10,7 +10,6 @@ const passwordsSchemas = {
       icon: z.string(),
       color: z.string(),
       pinned: z.boolean(),
-      encrypted_data: z.string(),
       created: z.string(),
       updated: z.string()
     }),
@@ -130,20 +129,6 @@ const passwordsSchemas = {
           required: false,
           system: false,
           type: 'bool'
-        },
-        {
-          autogeneratePattern: '',
-          hidden: false,
-          id: 'text2057876257',
-          max: 0,
-          min: 0,
-          name: 'encrypted_data',
-          pattern: '',
-          presentable: false,
-          primaryKey: false,
-          required: false,
-          system: false,
-          type: 'text'
         },
         {
           hidden: false,

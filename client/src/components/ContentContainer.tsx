@@ -176,16 +176,18 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       <SearchInput
         namespace="apps.passwords"
         searchTarget="password"
-        setValue={setQuery}
         value={query}
+        onChange={setQuery}
       />
       <WithQuery query={passwordListQuery}>
         {() =>
           filteredPasswordList.length === 0 ? (
             <EmptyStateScreen
               icon="tabler:key-off"
-              name={passwordListQuery.data?.length ? 'search' : 'passwords'}
-              namespace="apps.passwords"
+              message={{
+                id: passwordListQuery.data?.length ? 'search' : 'passwords',
+                namespace: 'apps.passwords'
+              }}
             />
           ) : (
             <div className="my-8 flex w-full flex-col gap-3">
