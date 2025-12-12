@@ -1,6 +1,5 @@
 import forgeAPI from '@/utils/forgeAPI'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDebounce } from '@uidotdev/usehooks'
 import {
   Button,
   ContextMenuItem,
@@ -29,8 +28,6 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
 
   const [query, setQuery] = useState('')
 
-  const debouncedQuery = useDebounce(query, 300)
-
   const passwordListQuery = useQuery(
     forgeAPI.passwords.entries.list.queryOptions({
       enabled: masterPassword !== ''
@@ -44,16 +41,16 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       return []
     }
 
-    if (debouncedQuery === '') {
+    if (query === '') {
       return passwordList
     }
 
     return passwordList.filter(
       password =>
-        password.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-        password.website.toLowerCase().includes(debouncedQuery.toLowerCase())
+        password.name.toLowerCase().includes(query.toLowerCase()) ||
+        password.website.toLowerCase().includes(query.toLowerCase())
     )
-  }, [debouncedQuery, passwordListQuery.data])
+  }, [query, passwordListQuery.data])
 
   async function pinPassword(id: string) {
     const mapPasswords = (p: PasswordEntry) =>
@@ -174,6 +171,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
         }}
       />
       <SearchInput
+        debounceMs={300}
         namespace="apps.passwords"
         searchTarget="password"
         value={query}
