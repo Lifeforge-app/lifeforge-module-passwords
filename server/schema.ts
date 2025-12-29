@@ -14,7 +14,6 @@ const passwordsSchemas = {
       updated: z.string()
     }),
     raw: {
-      id: 'tgblyh0po4v8d1o',
       listRule: '@request.auth.id != ""',
       viewRule: '@request.auth.id != ""',
       createRule: '@request.auth.id != ""',
@@ -26,7 +25,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '[a-z0-9]{15}',
           hidden: false,
-          id: 'text3208210256',
           max: 15,
           min: 15,
           name: 'id',
@@ -40,7 +38,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '',
           hidden: false,
-          id: 'f4ty6h3t',
           max: 0,
           min: 0,
           name: 'name',
@@ -54,7 +51,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '',
           hidden: false,
-          id: 'erv1avc6',
           max: 0,
           min: 0,
           name: 'website',
@@ -68,7 +64,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '',
           hidden: false,
-          id: 'levsseul',
           max: 0,
           min: 0,
           name: 'username',
@@ -82,7 +77,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '',
           hidden: false,
-          id: 'rk3jhjg6',
           max: 0,
           min: 0,
           name: 'password',
@@ -96,7 +90,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '',
           hidden: false,
-          id: 'oaez30fw',
           max: 0,
           min: 0,
           name: 'icon',
@@ -110,7 +103,6 @@ const passwordsSchemas = {
         {
           autogeneratePattern: '',
           hidden: false,
-          id: 'g8lfhqc5',
           max: 0,
           min: 0,
           name: 'color',
@@ -123,7 +115,6 @@ const passwordsSchemas = {
         },
         {
           hidden: false,
-          id: 'ckvtxdlg',
           name: 'pinned',
           presentable: false,
           required: false,
@@ -132,7 +123,6 @@ const passwordsSchemas = {
         },
         {
           hidden: false,
-          id: 'autodate2990389176',
           name: 'created',
           onCreate: true,
           onUpdate: false,
@@ -142,7 +132,6 @@ const passwordsSchemas = {
         },
         {
           hidden: false,
-          id: 'autodate3332085495',
           name: 'updated',
           onCreate: true,
           onUpdate: true,
