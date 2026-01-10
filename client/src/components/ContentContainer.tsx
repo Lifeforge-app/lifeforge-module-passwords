@@ -1,4 +1,3 @@
-import forgeAPI from '@/utils/forgeAPI'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
@@ -15,6 +14,8 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { encrypt } from 'shared'
 
+import forgeAPI from '@/utils/forgeAPI'
+
 import type { PasswordEntry } from '..'
 import ModifyPasswordModal from '../modals/ModifyPasswordModal'
 import PasswordEntryItem from './PasswordEntryItem'
@@ -22,7 +23,7 @@ import PasswordEntryItem from './PasswordEntryItem'
 function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const queryClient = useQueryClient()
 
-  const open = useModalStore(state => state.open)
+  const { open } = useModalStore()
 
   const { t } = useTranslation('apps.passwords')
 

@@ -5,6 +5,7 @@ import type { InferOutput } from 'shared'
 import forgeAPI from '@/utils/forgeAPI'
 
 import ContentContainer from './components/ContentContainer'
+import './index.css'
 
 export type PasswordEntry = InferOutput<
   typeof forgeAPI.passwords.entries.list

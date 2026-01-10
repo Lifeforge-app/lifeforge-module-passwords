@@ -1,4 +1,3 @@
-import forgeAPI from '@/utils/forgeAPI'
 import { Icon } from '@iconify/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
@@ -7,10 +6,10 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
   Button,
+  Card,
   ConfirmationModal,
   ContextMenu,
-  ContextMenuItem,
-  Card
+  ContextMenuItem
 } from 'lifeforge-ui'
 import { useModalStore } from 'lifeforge-ui'
 import { useCallback, useState } from 'react'
@@ -18,6 +17,8 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { usePromiseLoading } from 'shared'
 import { encrypt } from 'shared'
+
+import forgeAPI from '@/utils/forgeAPI'
 
 import type { PasswordEntry } from '..'
 import ModifyPasswordModal from '../modals/ModifyPasswordModal'
@@ -38,7 +39,7 @@ function PasswordEntryItem({
 
   const { t } = useTranslation('apps.passwords')
 
-  const open = useModalStore(state => state.open)
+  const { open } = useModalStore()
 
   const [decryptedPassword, setDecryptedPassword] = useState<string | null>(
     null
