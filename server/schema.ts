@@ -1,6 +1,7 @@
+import { cleanSchemas } from '@lifeforge/server-utils'
 import z from 'zod'
 
-const passwordsSchemas = {
+export const schemas = {
   entries: {
     schema: z.object({
       name: z.string(),
@@ -146,4 +147,4 @@ const passwordsSchemas = {
   }
 }
 
-export default passwordsSchemas
+export default cleanSchemas(schemas)

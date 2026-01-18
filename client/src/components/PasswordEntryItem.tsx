@@ -50,7 +50,7 @@ function PasswordEntryItem({
   const [rotateLoading, setRotateLoading] = useState(false)
 
   const deleteMutation = useMutation(
-    forgeAPI.passwords.entries.remove
+    forgeAPI.entries.remove
       .input({
         id: password.id
       })
@@ -235,14 +235,13 @@ function PasswordEntryItem({
                   generatedPassword += allCharacters[randomIndex]
                 }
 
-                const challenge =
-                  await forgeAPI.passwords.entries.getChallenge.query()
+                const challenge = await forgeAPI.entries.getChallenge.query()
 
                 const encryptedMaster = encrypt(masterPassword, challenge)
 
                 const encryptedPassword = encrypt(generatedPassword, challenge)
 
-                await forgeAPI.passwords.entries.update
+                await forgeAPI.entries.update
                   .input({
                     id: password.id
                   })

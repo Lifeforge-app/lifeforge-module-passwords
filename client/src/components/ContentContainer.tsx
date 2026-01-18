@@ -30,7 +30,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const [query, setQuery] = useState('')
 
   const passwordListQuery = useQuery(
-    forgeAPI.passwords.entries.list.queryOptions({
+    forgeAPI.entries.list.queryOptions({
       enabled: masterPassword !== ''
     })
   )
@@ -65,7 +65,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
     }
 
     try {
-      await forgeAPI.passwords.entries.togglePin.input({ id }).mutate({})
+      await forgeAPI.entries.togglePin.input({ id }).mutate({})
 
       queryClient.setQueryData<PasswordEntry[]>(
         ['passwords', 'entries'],
@@ -92,7 +92,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
 
   const handleExport = useCallback(async () => {
     try {
-      const challenge = await forgeAPI.passwords.entries.getChallenge.query()
+      const challenge = await forgeAPI.entries.getChallenge.query()
 
       if (!challenge) {
         toast.error('Failed to export passwords')
@@ -100,7 +100,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
         return
       }
 
-      const entries = await forgeAPI.passwords.entries.exportEntries.mutate({
+      const entries = await forgeAPI.entries.exportEntries.mutate({
         master: encrypt(masterPassword, challenge)
       })
 

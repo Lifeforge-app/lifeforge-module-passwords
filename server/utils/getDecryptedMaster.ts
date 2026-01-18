@@ -1,17 +1,17 @@
-import { decrypt2 } from '@functions/auth/encryption'
-import { PBService } from '@functions/database'
-import { ClientError } from '@functions/routes/utils/response'
-import { SCHEMAS } from '@schema'
+import { ClientError, type IPBService } from '@lifeforge/server-utils'
 import bcrypt from 'bcryptjs'
-import z from 'zod'
+
+import schema from '../schema'
 
 export const getDecryptedMaster = async (
-  pb: PBService,
+  pb: IPBService<typeof schema>,
   master: string,
-  challenge: string
+  challenge: string,
+  decrypt2: any
 ): Promise<string> => {
-  const { masterPasswordHash } = pb.instance.authStore
-    .record as unknown as z.infer<typeof SCHEMAS.user.users.schema>
+  const { masterPasswordHash } = pb.instance.authStore.record as unknown as {
+    masterPasswordHash: string
+  }
 
   const decryptedMaster = decrypt2(master, challenge)
 

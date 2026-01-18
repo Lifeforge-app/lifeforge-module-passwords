@@ -1,9 +1,9 @@
-import { forgeRouter } from '@functions/routes'
+import { forgeRouter } from '@lifeforge/server-utils'
 
-import entriesRouter from './routes/entries'
-import masterRouter from './routes/master'
+import * as entriesRoutes from './routes/entries'
+import * as masterRoutes from './routes/master'
 
 export default forgeRouter({
-  master: masterRouter,
-  entries: entriesRouter
+  master: masterRoutes,
+  entries: entriesRoutes
 })

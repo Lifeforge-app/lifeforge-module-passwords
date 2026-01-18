@@ -1,45 +1,29 @@
-import {
-  decrypt as _decrypt,
-  decrypt2,
-  encrypt,
-  encrypt2
-} from '@functions/auth/encryption'
-import { forgeController, forgeRouter } from '@functions/routes'
-import { SCHEMAS } from '@schema'
 import { v4 } from 'uuid'
 import z from 'zod'
 
+import forge from '../forge'
+import passwordsSchemas from '../schema'
 import { getDecryptedMaster } from '../utils/getDecryptedMaster'
 
-export let challenge = v4()
+let challenge = v4()
 
 setInterval(() => {
   challenge = v4()
 }, 1000 * 60)
 
-const getChallenge = forgeController
+export const getChallenge = forge
   .query()
-  .description({
-    en: 'Retrieve challenge token for password encryption',
-    ms: 'Dapatkan token cabaran untuk penyulitan kata laluan',
-    'zh-CN': '获取密码加密的挑战令牌',
-    'zh-TW': '獲取密碼加密的挑戰令牌'
-  })
+  .description('Retrieve challenge token for password encryption')
   .input({})
   .callback(async () => challenge)
 
-const list = forgeController
+export const list = forge
   .query()
-  .description({
-    en: 'Get all password entries with sorting',
-    ms: 'Dapatkan semua entri kata laluan dengan penyusunan',
-    'zh-CN': '获取所有密码条目并排序',
-    'zh-TW': '獲取所有密碼條目並排序'
-  })
+  .description('Get all password entries with sorting')
   .input({})
   .callback(({ pb }) =>
     pb.getFullList
-      .collection('passwords__entries')
+      .collection('entries')
       .sort(['-pinned', 'name'])
       .fields({
         id: true,
@@ -54,16 +38,11 @@ const list = forgeController
       .execute()
   )
 
-const create = forgeController
+export const create = forge
   .mutation()
-  .description({
-    en: 'Create a new encrypted password entry',
-    ms: 'Cipta entri kata laluan tersulitkan baharu',
-    'zh-CN': '创建新的加密密码条目',
-    'zh-TW': '創建新的加密密碼條目'
-  })
+  .description('Create a new encrypted password entry')
   .input({
-    body: SCHEMAS.passwords.entries.schema
+    body: passwordsSchemas.entries
       .omit({
         pinned: true,
         created: true,
@@ -74,40 +53,48 @@ const create = forgeController
       })
   })
   .statusCode(201)
-  .callback(async ({ pb, body }) => {
-    const { master, password, ...rest } = body
+  .callback(
+    async ({
+      pb,
+      body,
+      core: {
+        crypto: { encrypt, decrypt2, decrypt: _decrypt }
+      }
+    }) => {
+      const { master, password, ...rest } = body
 
-    const decryptedMaster = await getDecryptedMaster(pb, master, challenge)
+      const decryptedMaster = await getDecryptedMaster(
+        pb,
+        master,
+        challenge,
+        decrypt2
+      )
 
-    const decryptedPassword = decrypt2(password, challenge)
+      const decryptedPassword = decrypt2(password, challenge)
 
-    const encryptedPassword = encrypt(
-      Buffer.from(decryptedPassword),
-      decryptedMaster
-    )
+      const encryptedPassword = encrypt(
+        Buffer.from(decryptedPassword),
+        decryptedMaster
+      )
 
-    await pb.create
-      .collection('passwords__entries')
-      .data({
-        ...rest,
-        password: encryptedPassword.toString('base64')
-      })
-      .execute()
-  })
+      await pb.create
+        .collection('entries')
+        .data({
+          ...rest,
+          password: encryptedPassword.toString('base64')
+        })
+        .execute()
+    }
+  )
 
-const update = forgeController
+export const update = forge
   .mutation()
-  .description({
-    en: 'Update an existing password entry',
-    ms: 'Kemas kini entri kata laluan sedia ada',
-    'zh-CN': '更新现有的密码条目',
-    'zh-TW': '更新現有的密碼條目'
-  })
+  .description('Update an existing password entry')
   .input({
     query: z.object({
       id: z.string()
     }),
-    body: SCHEMAS.passwords.entries.schema
+    body: passwordsSchemas.entries
       .omit({
         pinned: true,
         created: true,
@@ -118,38 +105,47 @@ const update = forgeController
       })
   })
   .existenceCheck('query', {
-    id: 'passwords__entries'
+    id: 'entries'
   })
-  .callback(async ({ pb, query: { id }, body }) => {
-    const { master, password, ...rest } = body
+  .callback(
+    async ({
+      pb,
+      query: { id },
+      body,
+      core: {
+        crypto: { encrypt, decrypt2, decrypt: _decrypt }
+      }
+    }) => {
+      const { master, password, ...rest } = body
 
-    const decryptedMaster = await getDecryptedMaster(pb, master, challenge)
+      const decryptedMaster = await getDecryptedMaster(
+        pb,
+        master,
+        challenge,
+        decrypt2
+      )
 
-    const decryptedPassword = decrypt2(password, challenge)
+      const decryptedPassword = decrypt2(password, challenge)
 
-    const encryptedPassword = encrypt(
-      Buffer.from(decryptedPassword),
-      decryptedMaster
-    )
+      const encryptedPassword = encrypt(
+        Buffer.from(decryptedPassword),
+        decryptedMaster
+      )
 
-    await pb.update
-      .collection('passwords__entries')
-      .id(id)
-      .data({
-        ...rest,
-        password: encryptedPassword.toString('base64')
-      })
-      .execute()
-  })
+      await pb.update
+        .collection('entries')
+        .id(id)
+        .data({
+          ...rest,
+          password: encryptedPassword.toString('base64')
+        })
+        .execute()
+    }
+  )
 
-const decrypt = forgeController
+export const decrypt = forge
   .mutation()
-  .description({
-    en: 'Decrypt and retrieve a password entry.',
-    ms: 'Nyahsulitkan dan dapatkan entri kata laluan',
-    'zh-CN': '解密并检索密码条目',
-    'zh-TW': '解密並檢索密碼條目'
-  })
+  .description('Decrypt and retrieve a password entry.')
   .input({
     query: z.object({
       id: z.string(),
@@ -157,69 +153,66 @@ const decrypt = forgeController
     })
   })
   .existenceCheck('query', {
-    id: 'passwords__entries'
+    id: 'entries'
   })
-  .callback(async ({ pb, query: { id, master } }) => {
-    const decryptedMaster = await getDecryptedMaster(pb, master, challenge)
+  .callback(
+    async ({
+      pb,
+      query: { id, master },
+      core: {
+        crypto: { decrypt: _decrypt, encrypt2, decrypt2 }
+      }
+    }) => {
+      const decryptedMaster = await getDecryptedMaster(
+        pb,
+        master,
+        challenge,
+        decrypt2
+      )
 
-    const password = await pb.getOne
-      .collection('passwords__entries')
-      .id(id)
-      .execute()
+      const password = await pb.getOne.collection('entries').id(id).execute()
 
-    const decryptedPassword = _decrypt(
-      Buffer.from(password.password, 'base64'),
-      decryptedMaster
-    )
+      const decryptedPassword = _decrypt(
+        Buffer.from(password.password, 'base64'),
+        decryptedMaster
+      )
 
-    return encrypt2(decryptedPassword.toString(), challenge)
-  })
+      return encrypt2(decryptedPassword.toString(), challenge)
+    }
+  )
 
-const remove = forgeController
+export const remove = forge
   .mutation()
-  .description({
-    en: 'Delete a password entry',
-    ms: 'Padam entri kata laluan',
-    'zh-CN': '删除密码条目',
-    'zh-TW': '刪除密碼條目'
-  })
+  .description('Delete a password entry')
   .input({
     query: z.object({
       id: z.string()
     })
   })
   .existenceCheck('query', {
-    id: 'passwords__entries'
+    id: 'entries'
   })
   .statusCode(204)
   .callback(({ pb, query: { id } }) =>
-    pb.delete.collection('passwords__entries').id(id).execute()
+    pb.delete.collection('entries').id(id).execute()
   )
 
-const togglePin = forgeController
+export const togglePin = forge
   .mutation()
-  .description({
-    en: 'Toggle pin status of a password entry',
-    ms: 'Togol status pin entri kata laluan',
-    'zh-CN': '切换密码条目的固定状态',
-    'zh-TW': '切換密碼條目的固定狀態'
-  })
+  .description('Toggle pin status of a password entry')
   .input({
     query: z.object({
       id: z.string()
     })
   })
   .existenceCheck('query', {
-    id: 'passwords__entries'
+    id: 'entries'
   })
   .callback(async ({ pb, query: { id } }) => {
-    const entry = await pb.getOne
-      .collection('passwords__entries')
-      .id(id)
-      .execute()
+    const entry = await pb.getOne.collection('entries').id(id).execute()
 
     await pb.update
-      .collection('passwords__entries')
+      .collection('entries')
       .id(id)
       .data({
         pinned: !entry.pinned
@@ -227,45 +220,41 @@ const togglePin = forgeController
       .execute()
   })
 
-
-const exportEntries = forgeController
+export const exportEntries = forge
   .mutation()
-  .description({
-    en: 'Export all password entries decrypted',
-    ms: 'Eksport semua entri kata laluan yang dinyahsulit',
-    'zh-CN': '导出所有解密的密码条目',
-    'zh-TW': '導出所有解密的密碼條目'
-  })
+  .description('Export all password entries decrypted')
   .input({
     body: z.object({
       master: z.string()
     })
   })
-  .callback(async ({ pb, body: { master } }) => {
-    const decryptedMaster = await getDecryptedMaster(pb, master, challenge)
-
-    const entries = await pb.getFullList.collection('passwords__entries').execute()
-
-    return entries.map(entry => {
-      const decryptedPassword = _decrypt(
-        Buffer.from(entry.password, 'base64'),
-        decryptedMaster
+  .callback(
+    async ({
+      pb,
+      body: { master },
+      core: {
+        crypto: { decrypt: _decrypt, decrypt2 }
+      }
+    }) => {
+      const decryptedMaster = await getDecryptedMaster(
+        pb,
+        master,
+        challenge,
+        decrypt2
       )
 
-      return {
-        ...entry,
-        password: decryptedPassword.toString()
-      }
-    })
-  })
+      const entries = await pb.getFullList.collection('entries').execute()
 
-export default forgeRouter({
-  getChallenge,
-  list,
-  create,
-  update,
-  decrypt,
-  remove,
-  togglePin,
-  exportEntries
-})
+      return entries.map(entry => {
+        const decryptedPassword = _decrypt(
+          Buffer.from(entry.password, 'base64'),
+          decryptedMaster
+        )
+
+        return {
+          ...entry,
+          password: decryptedPassword.toString()
+        }
+      })
+    }
+  )

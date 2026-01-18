@@ -1,15 +1,16 @@
-import forgeAPI from '@/utils/forgeAPI'
 import { decrypt, encrypt } from 'shared'
+
+import forgeAPI from '@/utils/forgeAPI'
 
 export async function getDecryptedPassword(
   masterPassword: string,
   id: string
 ): Promise<string> {
-  const challenge = await forgeAPI.passwords.entries.getChallenge.query()
+  const challenge = await forgeAPI.entries.getChallenge.query()
 
   const encryptedMaster = encrypt(masterPassword, challenge)
 
-  const decrypted = await forgeAPI.passwords.entries.decrypt
+  const decrypted = await forgeAPI.entries.decrypt
     .input({
       id,
       master: encryptedMaster

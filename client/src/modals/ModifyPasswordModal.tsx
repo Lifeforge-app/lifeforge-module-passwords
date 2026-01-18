@@ -1,10 +1,11 @@
-import forgeAPI from '@/utils/forgeAPI'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import copy from 'copy-to-clipboard'
 import { FormModal, defineForm } from 'lifeforge-ui'
 import { toast } from 'react-toastify'
 import { type InferInput } from 'shared'
 import { encrypt } from 'shared'
+
+import forgeAPI from '@/utils/forgeAPI'
 
 import type { PasswordEntry } from '..'
 
@@ -25,8 +26,8 @@ function ModifyPasswordModal({
 
   const mutation = useMutation(
     (type === 'create'
-      ? forgeAPI.passwords.entries.create
-      : forgeAPI.passwords.entries.update.input({
+      ? forgeAPI.entries.create
+      : forgeAPI.entries.update.input({
           id: initialData?.id || ''
         })
     ).mutationOptions({
@@ -42,7 +43,7 @@ function ModifyPasswordModal({
   )
 
   const { formProps, formStateStore } = defineForm<
-    InferInput<(typeof forgeAPI.passwords.entries)[typeof type]>['body']
+    InferInput<(typeof forgeAPI.entries)[typeof type]>['body']
   >({
     icon: type === 'create' ? 'tabler:plus' : 'tabler:pencil',
     namespace: 'apps.passwords',
@@ -136,7 +137,7 @@ function ModifyPasswordModal({
       master: ''
     })
     .onSubmit(async data => {
-      const challenge = await forgeAPI.passwords.entries.getChallenge.query()
+      const challenge = await forgeAPI.entries.getChallenge.query()
 
       const encryptedMaster = encrypt(masterPassword, challenge)
 

@@ -7,9 +7,7 @@ import forgeAPI from '@/utils/forgeAPI'
 import ContentContainer from './components/ContentContainer'
 import './index.css'
 
-export type PasswordEntry = InferOutput<
-  typeof forgeAPI.passwords.entries.list
->[number]
+export type PasswordEntry = InferOutput<typeof forgeAPI.entries.list>[number]
 
 function Passwords() {
   const { userData } = useAuth()
@@ -17,9 +15,9 @@ function Passwords() {
   return (
     <WithMasterPassword
       controllers={{
-        createPassword: forgeAPI.passwords.master.create,
-        getChallenge: forgeAPI.passwords.master.getChallenge,
-        verifyPassword: forgeAPI.passwords.master.verify
+        createPassword: forgeAPI.master.create,
+        getChallenge: forgeAPI.master.getChallenge,
+        verifyPassword: forgeAPI.master.verify
       }}
       hasMasterPassword={!!userData?.hasMasterPassword}
     >
