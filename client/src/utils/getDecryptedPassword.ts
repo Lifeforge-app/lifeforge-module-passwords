@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from 'shared'
+import { decrypt, encrypt } from '@lifeforge/shared'
 
 import forgeAPI from '@/utils/forgeAPI'
 

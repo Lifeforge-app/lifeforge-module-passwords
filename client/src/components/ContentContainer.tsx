@@ -8,11 +8,11 @@ import {
   SearchInput,
   WithQuery,
   useModalStore
-} from 'lifeforge-ui'
+} from '@lifeforge/ui'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import { encrypt } from 'shared'
+import { encrypt } from '@lifeforge/shared'
 
 import forgeAPI from '@/utils/forgeAPI'
 
