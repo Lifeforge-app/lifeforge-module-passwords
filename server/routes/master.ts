@@ -11,18 +11,25 @@ setInterval(() => {
 }, 1000 * 60)
 
 export const getChallenge = forge
-  .query()
-  .description('Retrieve challenge token for master password authentication')
-  .input({})
-  .callback(async () => challenge)
+  .query({
+    description: 'Retrieve challenge token for master password authentication',
+    output: {
+      OK: z.string()
+    }
+  })
+  .callback(async ({ response }) => response.ok(challenge))
 
 export const create = forge
-  .mutation()
-  .description('Create a new master password')
-  .input({
-    body: z.object({
-      password: z.string()
-    })
+  .mutation({
+    description: 'Create a new master password',
+    input: {
+      body: z.object({
+        password: z.string()
+      })
+    },
+    output: {
+      NO_CONTENT: true
+    }
   })
   .callback(
     async ({
@@ -30,7 +37,8 @@ export const create = forge
       body: { password },
       core: {
         crypto: { decrypt2 }
-      }
+      },
+      response
     }) => {
       const salt = await bcrypt.genSalt(10)
 
@@ -43,16 +51,22 @@ export const create = forge
         .update(pb.instance.authStore.record!.id, {
           masterPasswordHash
         })
+
+      return response.noContent()
     }
   )
 
 export const verify = forge
-  .mutation()
-  .description('Verify master password against stored hash')
-  .input({
-    body: z.object({
-      password: z.string()
-    })
+  .mutation({
+    description: 'Verify master password against stored hash',
+    input: {
+      body: z.object({
+        password: z.string()
+      })
+    },
+    output: {
+      OK: z.boolean()
+    }
   })
   .callback(
     async ({
@@ -60,7 +74,8 @@ export const verify = forge
       body: { password },
       core: {
         crypto: { decrypt2 }
-      }
+      },
+      response
     }) => {
       const decryptedMaster = decrypt2(password, challenge)
 
@@ -70,18 +85,24 @@ export const verify = forge
 
       const { masterPasswordHash } = user
 
-      return await bcrypt.compare(decryptedMaster, masterPasswordHash)
+      return response.ok(
+        await bcrypt.compare(decryptedMaster, masterPasswordHash)
+      )
     }
   )
 
 export const validateOTP = forge
-  .mutation()
-  .description('Validate OTP for master password operations')
-  .input({
-    body: z.object({
-      otp: z.string(),
-      otpId: z.string()
-    })
+  .mutation({
+    description: 'Validate OTP for master password operations',
+    input: {
+      body: z.object({
+        otp: z.string(),
+        otpId: z.string()
+      })
+    },
+    output: {
+      OK: z.boolean()
+    }
   })
   .callback(
     async ({
@@ -89,6 +110,7 @@ export const validateOTP = forge
       body,
       core: {
         validation: { validateOTP }
-      }
-    }) => await validateOTP(pb, body, challenge)
+      },
+      response
+    }) => response.ok(await validateOTP(pb, body, challenge))
   )

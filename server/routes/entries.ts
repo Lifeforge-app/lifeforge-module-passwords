@@ -12,54 +12,77 @@ setInterval(() => {
 }, 1000 * 60)
 
 export const getChallenge = forge
-  .query()
-  .description('Retrieve challenge token for password encryption')
-  .input({})
-  .callback(async () => challenge)
+  .query({
+    description: 'Retrieve challenge token for password encryption',
+    output: {
+      OK: z.string()
+    }
+  })
+  .callback(async ({ response }) => response.ok(challenge))
 
 export const list = forge
-  .query()
-  .description('Get all password entries with sorting')
-  .input({})
-  .callback(({ pb }) =>
-    pb.getFullList
-      .collection('entries')
-      .sort(['-pinned', 'name'])
-      .fields({
-        id: true,
-        name: true,
-        icon: true,
-        color: true,
-        website: true,
-        username: true,
-        pinned: true,
-        updated: true
-      })
-      .execute()
+  .query({
+    description: 'Get all password entries with sorting',
+    output: {
+      OK: z.array(
+        passwordsSchemas.entries.pick({
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+          website: true,
+          username: true,
+          pinned: true,
+          updated: true
+        })
+      )
+    }
+  })
+  .callback(async ({ pb, response }) =>
+    response.ok(
+      await pb.getFullList
+        .collection('entries')
+        .sort(['-pinned', 'name'])
+        .fields({
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+          website: true,
+          username: true,
+          pinned: true,
+          updated: true
+        })
+        .execute()
+    )
   )
 
 export const create = forge
-  .mutation()
-  .description('Create a new encrypted password entry')
-  .input({
-    body: passwordsSchemas.entries
-      .omit({
-        pinned: true,
-        created: true,
-        updated: true
-      })
-      .extend({
-        master: z.string()
-      })
+  .mutation({
+    description: 'Create a new encrypted password entry',
+    input: {
+      body: passwordsSchemas.entries
+        .omit({
+          pinned: true,
+          created: true,
+          updated: true
+        })
+        .extend({
+          master: z.string()
+        })
+    },
+    output: {
+      NO_CONTENT: true
+    }
   })
-  .statusCode(201)
   .callback(
     async ({
       pb,
       body,
       core: {
         crypto: { encrypt, decrypt2, decrypt: _decrypt }
-      }
+      },
+      response
     }) => {
       const { master, password, ...rest } = body
 
@@ -84,28 +107,35 @@ export const create = forge
           password: encryptedPassword.toString('base64')
         })
         .execute()
+
+      return response.noContent()
     }
   )
 
 export const update = forge
-  .mutation()
-  .description('Update an existing password entry')
-  .input({
-    query: z.object({
-      id: z.string()
-    }),
-    body: passwordsSchemas.entries
-      .omit({
-        pinned: true,
-        created: true,
-        updated: true
-      })
-      .extend({
-        master: z.string()
-      })
-  })
-  .existenceCheck('query', {
-    id: 'entries'
+  .mutation({
+    description: 'Update an existing password entry',
+    input: {
+      query: z.object({
+        id: z.string()
+      }),
+      body: passwordsSchemas.entries
+        .omit({
+          pinned: true,
+          created: true,
+          updated: true
+        })
+        .extend({
+          master: z.string()
+        })
+    },
+    existenceCheck: {
+      query: { id: 'entries' }
+    },
+    output: {
+      NO_CONTENT: true,
+      NOT_FOUND: true
+    }
   })
   .callback(
     async ({
@@ -114,7 +144,8 @@ export const update = forge
       body,
       core: {
         crypto: { encrypt, decrypt2, decrypt: _decrypt }
-      }
+      },
+      response
     }) => {
       const { master, password, ...rest } = body
 
@@ -140,20 +171,27 @@ export const update = forge
           password: encryptedPassword.toString('base64')
         })
         .execute()
+
+      return response.noContent()
     }
   )
 
 export const decrypt = forge
-  .mutation()
-  .description('Decrypt and retrieve a password entry.')
-  .input({
-    query: z.object({
-      id: z.string(),
-      master: z.string()
-    })
-  })
-  .existenceCheck('query', {
-    id: 'entries'
+  .mutation({
+    description: 'Decrypt and retrieve a password entry.',
+    input: {
+      query: z.object({
+        id: z.string(),
+        master: z.string()
+      })
+    },
+    existenceCheck: {
+      query: { id: 'entries' }
+    },
+    output: {
+      OK: z.string(),
+      NOT_FOUND: true
+    }
   })
   .callback(
     async ({
@@ -161,7 +199,8 @@ export const decrypt = forge
       query: { id, master },
       core: {
         crypto: { decrypt: _decrypt, encrypt2, decrypt2 }
-      }
+      },
+      response
     }) => {
       const decryptedMaster = await getDecryptedMaster(
         pb,
@@ -177,38 +216,49 @@ export const decrypt = forge
         decryptedMaster
       )
 
-      return encrypt2(decryptedPassword.toString(), challenge)
+      return response.ok(encrypt2(decryptedPassword.toString(), challenge))
     }
   )
 
 export const remove = forge
-  .mutation()
-  .description('Delete a password entry')
-  .input({
-    query: z.object({
-      id: z.string()
-    })
+  .mutation({
+    description: 'Delete a password entry',
+    input: {
+      query: z.object({
+        id: z.string()
+      })
+    },
+    existenceCheck: {
+      query: { id: 'entries' }
+    },
+    output: {
+      NO_CONTENT: true,
+      NOT_FOUND: true
+    }
   })
-  .existenceCheck('query', {
-    id: 'entries'
+  .callback(async ({ pb, query: { id }, response }) => {
+    await pb.delete.collection('entries').id(id).execute()
+
+    return response.noContent()
   })
-  .statusCode(204)
-  .callback(({ pb, query: { id } }) =>
-    pb.delete.collection('entries').id(id).execute()
-  )
 
 export const togglePin = forge
-  .mutation()
-  .description('Toggle pin status of a password entry')
-  .input({
-    query: z.object({
-      id: z.string()
-    })
+  .mutation({
+    description: 'Toggle pin status of a password entry',
+    input: {
+      query: z.object({
+        id: z.string()
+      })
+    },
+    existenceCheck: {
+      query: { id: 'entries' }
+    },
+    output: {
+      NO_CONTENT: true,
+      NOT_FOUND: true
+    }
   })
-  .existenceCheck('query', {
-    id: 'entries'
-  })
-  .callback(async ({ pb, query: { id } }) => {
+  .callback(async ({ pb, query: { id }, response }) => {
     const entry = await pb.getOne.collection('entries').id(id).execute()
 
     await pb.update
@@ -218,15 +268,25 @@ export const togglePin = forge
         pinned: !entry.pinned
       })
       .execute()
+
+    return response.noContent()
   })
 
 export const exportEntries = forge
-  .mutation()
-  .description('Export all password entries decrypted')
-  .input({
-    body: z.object({
-      master: z.string()
-    })
+  .mutation({
+    description: 'Export all password entries decrypted',
+    input: {
+      body: z.object({
+        master: z.string()
+      })
+    },
+    output: {
+      OK: z.array(
+        passwordsSchemas.entries.extend({
+          password: z.string()
+        })
+      )
+    }
   })
   .callback(
     async ({
@@ -234,7 +294,8 @@ export const exportEntries = forge
       body: { master },
       core: {
         crypto: { decrypt: _decrypt, decrypt2 }
-      }
+      },
+      response
     }) => {
       const decryptedMaster = await getDecryptedMaster(
         pb,
@@ -245,16 +306,18 @@ export const exportEntries = forge
 
       const entries = await pb.getFullList.collection('entries').execute()
 
-      return entries.map(entry => {
-        const decryptedPassword = _decrypt(
-          Buffer.from(entry.password, 'base64'),
-          decryptedMaster
-        )
+      return response.ok(
+        entries.map(entry => {
+          const decryptedPassword = _decrypt(
+            Buffer.from(entry.password, 'base64'),
+            decryptedMaster
+          )
 
-        return {
-          ...entry,
-          password: decryptedPassword.toString()
-        }
-      })
+          return {
+            ...entry,
+            password: decryptedPassword.toString()
+          }
+        })
+      )
     }
   )
