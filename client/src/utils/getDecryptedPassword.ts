@@ -1,6 +1,6 @@
 import { decrypt, encrypt } from '@lifeforge/shared'
 
-import forgeAPI from '@/utils/forgeAPI'
+import { forgeAPI } from '@/manifest'
 
 export async function getDecryptedPassword(
   masterPassword: string,

@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { encrypt } from '@lifeforge/shared'
 
-import forgeAPI from '@/utils/forgeAPI'
+import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
 import ModifyPasswordModal from '../modals/ModifyPasswordModal'

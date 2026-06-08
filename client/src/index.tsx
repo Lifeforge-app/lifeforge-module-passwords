@@ -2,7 +2,7 @@ import { WithMasterPassword } from '@lifeforge/ui'
 import { useAuth } from '@lifeforge/shared'
 import type { InferOutput } from '@lifeforge/shared'
 
-import forgeAPI from '@/utils/forgeAPI'
+import { forgeAPI } from '@/manifest'
 
 import ContentContainer from './components/ContentContainer'
 import './index.css'
