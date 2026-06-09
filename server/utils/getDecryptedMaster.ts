@@ -1,5 +1,6 @@
-import { ClientError, type IPBService } from '@lifeforge/server-utils'
 import bcrypt from 'bcryptjs'
+
+import { ClientError, type IPBService } from '@lifeforge/server-utils'
 
 import schema from '../schema'
 
