@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from '@lifeforge/shared'
+import { decrypt, encrypt } from '@lifeforge/api'
 
 import { forgeAPI } from '@/manifest'
 
@@ -15,7 +15,7 @@ export async function getDecryptedPassword(
       id,
       master: encryptedMaster
     })
-    .mutate({})
+    .mutate(undefined)
 
   return decrypt(decrypted, challenge)
 }

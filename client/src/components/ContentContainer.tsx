@@ -1,4 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { encrypt } from '@lifeforge/api'
 import {
   Button,
   ContextMenuItem,
@@ -7,12 +11,9 @@ import {
   ModuleHeader,
   SearchInput,
   WithQuery,
+  toast,
   useModalStore
 } from '@lifeforge/ui'
-import { useCallback, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
-import { encrypt } from '@lifeforge/shared'
 
 import { forgeAPI } from '@/manifest'
 
@@ -65,7 +66,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
     }
 
     try {
-      await forgeAPI.entries.togglePin.input({ id }).mutate({})
+      await forgeAPI.entries.togglePin.input({ id }).mutate(undefined)
 
       queryClient.setQueryData<PasswordEntry[]>(
         ['passwords', 'entries'],

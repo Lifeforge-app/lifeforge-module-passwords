@@ -1,22 +1,23 @@
-import { Icon } from '@iconify/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { encrypt } from '@lifeforge/api'
+import { usePromiseLoading } from '@lifeforge/api'
 import {
   Button,
   Card,
   ConfirmationModal,
   ContextMenu,
-  ContextMenuItem
+  ContextMenuItem,
+  Icon,
+  toast,
+  useModalStore
 } from '@lifeforge/ui'
-import { useModalStore } from '@lifeforge/ui'
-import { useCallback, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'react-toastify'
-import { usePromiseLoading } from '@lifeforge/shared'
-import { encrypt } from '@lifeforge/shared'
 
 import { forgeAPI } from '@/manifest'
 
@@ -124,7 +125,7 @@ function PasswordEntryItem({
       description: `Are you sure you want to delete the password for ${password.name}? This action cannot be undone.`,
       confirmationButton: 'delete',
       onConfirm: async () => {
-        await deleteMutation.mutateAsync({})
+        await deleteMutation.mutateAsync(undefined)
       }
     })
   }, [password])

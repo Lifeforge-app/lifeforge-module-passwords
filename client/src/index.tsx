@@ -1,6 +1,6 @@
+import type { InferOutput } from '@lifeforge/api'
+import { useAuth } from '@lifeforge/api'
 import { WithMasterPassword } from '@lifeforge/ui'
-import { useAuth } from '@lifeforge/shared'
-import type { InferOutput } from '@lifeforge/shared'
 
 import { forgeAPI } from '@/manifest'
 
