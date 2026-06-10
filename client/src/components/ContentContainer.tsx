@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
-import { useModuleTranslation } from '@lifeforge/localization'
 
 import { encrypt } from '@lifeforge/api'
+import { useModuleTranslation } from '@lifeforge/localization'
 import {
   Button,
   ContextMenuItem,
@@ -162,7 +162,6 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
               <ContextMenuItem
                 icon="tabler:file-export"
                 label="exportToCsv"
-                namespace="apps.passwords"
                 onClick={handleExport}
               />
             </>
@@ -171,7 +170,6 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       />
       <SearchInput
         debounceMs={300}
-        namespace="apps.passwords"
         searchTarget="password"
         value={query}
         onChange={setQuery}
@@ -182,8 +180,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
             <EmptyStateScreen
               icon="tabler:key-off"
               message={{
-                id: passwordListQuery.data?.length ? 'search' : 'passwords',
-                namespace: 'apps.passwords'
+                id: passwordListQuery.data?.length ? 'search' : 'passwords'
               }}
             />
           ) : (

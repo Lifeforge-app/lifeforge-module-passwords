@@ -4,9 +4,9 @@ import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCallback, useState } from 'react'
-import { useModuleTranslation } from '@lifeforge/localization'
 
-import { encrypt , usePromiseLoading } from '@lifeforge/api'
+import { encrypt, usePromiseLoading } from '@lifeforge/api'
+import { useModuleTranslation } from '@lifeforge/localization'
 import {
   Button,
   Card,
@@ -206,7 +206,6 @@ function PasswordEntryItem({
               icon="tabler:rotate"
               label="Rotate Password"
               loading={rotateLoading}
-              namespace="apps.passwords"
               onClick={async () => {
                 setRotateLoading(true)
 
@@ -269,7 +268,6 @@ function PasswordEntryItem({
                 decryptedPassword === null ? 'Show Password' : 'Hide Password'
               }
               loading={loading}
-              namespace="apps.passwords"
               onClick={onDecrypt}
             />
             <ContextMenuItem
@@ -277,7 +275,6 @@ function PasswordEntryItem({
               icon="tabler:copy"
               label="Copy Password"
               loading={copyLoading}
-              namespace="apps.passwords"
               onClick={copyPassword}
             />
             <ContextMenuItem
