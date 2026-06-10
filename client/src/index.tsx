@@ -5,6 +5,7 @@ import { WithMasterPassword } from '@lifeforge/ui'
 import { forgeAPI } from '@/manifest'
 
 import ContentContainer from './components/ContentContainer'
+
 export type PasswordEntry = InferOutput<typeof forgeAPI.entries.list>[number]
 
 function Passwords() {

@@ -23,11 +23,8 @@ import PasswordEntryItem from './PasswordEntryItem'
 
 function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const queryClient = useQueryClient()
-
   const { open } = useModalStore()
-
   const { t } = useModuleTranslation()
-
   const [query, setQuery] = useState('')
 
   const passwordListQuery = useQuery(

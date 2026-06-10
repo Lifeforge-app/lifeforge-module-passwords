@@ -6,8 +6,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCallback, useState } from 'react'
 import { useModuleTranslation } from '@lifeforge/localization'
 
-import { encrypt } from '@lifeforge/api'
-import { usePromiseLoading } from '@lifeforge/api'
+import { encrypt , usePromiseLoading } from '@lifeforge/api'
 import {
   Button,
   Card,
@@ -37,9 +36,7 @@ function PasswordEntryItem({
   masterPassword: string
 }) {
   const queryClient = useQueryClient()
-
   const { t } = useModuleTranslation()
-
   const { open } = useModalStore()
 
   const [decryptedPassword, setDecryptedPassword] = useState<string | null>(
@@ -47,7 +44,6 @@ function PasswordEntryItem({
   )
 
   const [copyLoading, setCopyLoading] = useState(false)
-
   const [rotateLoading, setRotateLoading] = useState(false)
 
   const deleteMutation = useMutation(
