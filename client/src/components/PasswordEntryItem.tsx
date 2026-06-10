@@ -4,7 +4,7 @@ import copy from 'copy-to-clipboard'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCallback, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useModuleTranslation } from '@lifeforge/localization'
 
 import { encrypt } from '@lifeforge/api'
 import { usePromiseLoading } from '@lifeforge/api'
@@ -38,7 +38,7 @@ function PasswordEntryItem({
 }) {
   const queryClient = useQueryClient()
 
-  const { t } = useTranslation('apps.passwords')
+  const { t } = useModuleTranslation()
 
   const { open } = useModalStore()
 

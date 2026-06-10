@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useModuleTranslation } from '@lifeforge/localization'
 
 import { encrypt } from '@lifeforge/api'
 import {
@@ -26,7 +26,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
 
   const { open } = useModalStore()
 
-  const { t } = useTranslation('apps.passwords')
+  const { t } = useModuleTranslation()
 
   const [query, setQuery] = useState('')
 
