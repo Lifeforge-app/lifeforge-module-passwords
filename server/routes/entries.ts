@@ -1,46 +1,25 @@
-import dayjs from 'dayjs'
-import { v4 } from 'uuid'
 import z from 'zod'
 
 import forge from '../forge'
 import passwordsSchemas from '../schema'
-import { getDecryptedMaster } from '../utils/getDecryptedMaster'
-
-let challenge = v4()
-
-setInterval(() => {
-  challenge = v4()
-}, 1000 * 60)
-
-export const getChallenge = forge
-  .query({
-    description: 'Retrieve challenge token for password encryption',
-    output: {
-      OK: z.string()
-    }
-  })
-  .callback(async ({ response }) => response.ok(challenge))
 
 export const list = forge
   .query({
     description: 'Get all password entries with sorting',
     output: {
       OK: z.array(
-        passwordsSchemas.entries
-          .pick({
-            id: true,
-            name: true,
-            icon: true,
-            color: true,
-            website: true,
-            username: true,
-            pinned: true,
-            last_password_updated: true,
-            category: true
-          })
-          .extend({
-            password: z.string().optional()
-          })
+        passwordsSchemas.entries.pick({
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+          website: true,
+          username: true,
+          password: true,
+          pinned: true,
+          last_password_updated: true,
+          category: true
+        })
       )
     }
   })
@@ -56,6 +35,7 @@ export const list = forge
           color: true,
           website: true,
           username: true,
+          password: true,
           category: true,
           pinned: true,
           last_password_updated: true
@@ -66,62 +46,27 @@ export const list = forge
 
 export const create = forge
   .mutation({
-    description: 'Create a new encrypted password entry',
+    description: 'Create a new password entry with pre-encrypted password',
     input: {
-      body: passwordsSchemas.entries
-        .omit({
-          pinned: true,
-          created: true,
-          updated: true,
-          last_password_updated: true,
-          collectionId: true,
-          id: true,
-          collectionName: true
-        })
-        .extend({
-          master: z.string()
-        })
+      body: passwordsSchemas.entries.omit({
+        pinned: true,
+        created: true,
+        updated: true,
+        last_password_updated: true,
+        collectionId: true,
+        id: true,
+        collectionName: true
+      })
     },
     output: {
       NO_CONTENT: true
     }
   })
-  .callback(
-    async ({
-      pb,
-      body,
-      core: {
-        crypto: { encrypt, decrypt2, decrypt: _decrypt }
-      },
-      response
-    }) => {
-      const { master, password, ...rest } = body
+  .callback(async ({ pb, body, response }) => {
+    await pb.create.collection('entries').data(body).execute()
 
-      const decryptedMaster = await getDecryptedMaster(
-        pb,
-        master,
-        challenge,
-        decrypt2
-      )
-
-      const decryptedPassword = decrypt2(password, challenge)
-
-      const encryptedPassword = encrypt(
-        Buffer.from(decryptedPassword),
-        decryptedMaster
-      )
-
-      await pb.create
-        .collection('entries')
-        .data({
-          ...rest,
-          password: encryptedPassword.toString('base64')
-        })
-        .execute()
-
-      return response.noContent()
-    }
-  )
+    return response.noContent()
+  })
 
 export const update = forge
   .mutation({
@@ -130,19 +75,15 @@ export const update = forge
       query: z.object({
         id: z.string()
       }),
-      body: passwordsSchemas.entries
-        .omit({
-          pinned: true,
-          created: true,
-          updated: true,
-          collectionId: true,
-          last_password_updated: true,
-          id: true,
-          collectionName: true
-        })
-        .extend({
-          master: z.string()
-        })
+      body: passwordsSchemas.entries.omit({
+        pinned: true,
+        created: true,
+        updated: true,
+        last_password_updated: true,
+        collectionId: true,
+        id: true,
+        collectionName: true
+      })
     },
     existenceCheck: {
       query: { id: 'entries' }
@@ -152,105 +93,11 @@ export const update = forge
       NOT_FOUND: true
     }
   })
-  .callback(
-    async ({
-      pb,
-      query: { id },
-      body,
-      core: {
-        crypto: { encrypt, decrypt2, decrypt: _decrypt }
-      },
-      response
-    }) => {
-      const { master, password, ...rest } = body
+  .callback(async ({ pb, query: { id }, body, response }) => {
+    await pb.update.collection('entries').id(id).data(body).execute()
 
-      const decryptedMaster = await getDecryptedMaster(
-        pb,
-        master,
-        challenge,
-        decrypt2
-      )
-
-      const decryptedPassword = decrypt2(password, challenge)
-
-      const encryptedPassword = encrypt(
-        Buffer.from(decryptedPassword),
-        decryptedMaster
-      )
-
-      const { password: originalPassword } = await pb.getOne
-        .collection('entries')
-        .id(id)
-        .fields({
-          password: true
-        })
-        .execute()
-
-      const decryptedOriginalPassword = _decrypt(
-        Buffer.from(originalPassword, 'base64'),
-        decryptedMaster
-      ).toString()
-
-      await pb.update
-        .collection('entries')
-        .id(id)
-        .data({
-          ...rest,
-          password: encryptedPassword.toString('base64'),
-          last_password_updated:
-            decryptedOriginalPassword !== decryptedPassword
-              ? dayjs().toDate()
-              : undefined
-        })
-        .execute()
-
-      return response.noContent()
-    }
-  )
-
-export const decrypt = forge
-  .mutation({
-    description: 'Decrypt and retrieve a password entry.',
-    input: {
-      query: z.object({
-        id: z.string(),
-        master: z.string()
-      })
-    },
-    existenceCheck: {
-      query: { id: 'entries' }
-    },
-    output: {
-      OK: z.string(),
-      NOT_FOUND: true
-    }
+    return response.noContent()
   })
-  .callback(
-    async ({
-      pb,
-      query: { id, master },
-      core: {
-        crypto: { decrypt: _decrypt, encrypt2, decrypt2 }
-      },
-      response
-    }) => {
-      const decryptedMaster = await getDecryptedMaster(
-        pb,
-        master,
-        challenge,
-        decrypt2
-      )
-
-      const password = await pb.getOne.collection('entries').id(id).execute()
-
-      const decryptedPassword = _decrypt(
-        Buffer.from(password.password, 'base64'),
-        decryptedMaster
-      )
-
-      return response.ok(encrypt2(decryptedPassword.toString(), challenge))
-    }
-  )
 
 export const remove = forge
   .mutation({
@@ -303,53 +150,3 @@ export const togglePin = forge
 
     return response.noContent()
   })
-
-export const exportEntries = forge
-  .mutation({
-    description: 'Export all password entries decrypted',
-    input: {
-      body: z.object({
-        master: z.string()
-      })
-    },
-    output: {
-      OK: z.array(
-        passwordsSchemas.entries.extend({
-          password: z.string()
-        })
-      )
-    }
-  })
-  .callback(
-    async ({
-      pb,
-      body: { master },
-      core: {
-        crypto: { decrypt: _decrypt, decrypt2 }
-      },
-      response
-    }) => {
-      const decryptedMaster = await getDecryptedMaster(
-        pb,
-        master,
-        challenge,
-        decrypt2
-      )
-
-      const entries = await pb.getFullList.collection('entries').execute()
-
-      return response.ok(
-        entries.map(entry => {
-          const decryptedPassword = _decrypt(
-            Buffer.from(entry.password, 'base64'),
-            decryptedMaster
-          )
-
-          return {
-            ...entry,
-            password: decryptedPassword.toString()
-          }
-        })
-      )
-    }
-  )

@@ -2,11 +2,11 @@ import { useCallback, useState } from 'react'
 
 import { toast } from '@lifeforge/ui'
 
-import { getDecryptedPassword } from '@/utils/getDecryptedPassword'
+import { decrypt } from '@/utils/crypto'
 
 export default function useDecryptPassword(
   masterPassword: string,
-  passwordId: string
+  encryptedPassword: string
 ) {
   const [decryptedPassword, setDecryptedPassword] = useState<string | null>(
     null
@@ -20,13 +20,13 @@ export default function useDecryptPassword(
     }
 
     try {
-      const decrypted = await getDecryptedPassword(masterPassword, passwordId)
-      setDecryptedPassword(decrypted)
+      const result = await decrypt(encryptedPassword, masterPassword)
+      setDecryptedPassword(result)
     } catch {
       toast.error("Couldn't decrypt the password. Please try again.")
       setDecryptedPassword(null)
     }
-  }, [masterPassword, passwordId, decryptedPassword])
+  }, [masterPassword, encryptedPassword, decryptedPassword])
 
   return { decryptedPassword, toggleDecrypt, setDecryptedPassword }
 }

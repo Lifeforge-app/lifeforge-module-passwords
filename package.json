@@ -14,9 +14,8 @@
     "build:server": "bun build ./server/index.ts --outdir ./server/dist --target bun --external @lifeforge/server-utils --external zod"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "copy-to-clipboard": "^3.3.3",
-    "uuid": "^13.0.0"
+    "@noble/hashes": "^2.2.0",
+    "copy-to-clipboard": "^3.3.3"
   },
   "devDependencies": {},
   "lifeforge": {

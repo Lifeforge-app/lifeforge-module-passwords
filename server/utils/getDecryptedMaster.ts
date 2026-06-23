@@ -1,8 +1,7 @@
-import bcrypt from 'bcryptjs'
-
 import { ClientError, type IPBService } from '@lifeforge/server-utils'
 
 import schema from '../schema'
+import { verify } from './passwordHash'
 
 export const getDecryptedMaster = async (
   pb: IPBService<typeof schema>,
@@ -16,7 +15,7 @@ export const getDecryptedMaster = async (
 
   const decryptedMaster = decrypt2(master, challenge)
 
-  const isMatch = await bcrypt.compare(decryptedMaster, masterPasswordHash)
+  const isMatch = await verify(decryptedMaster, masterPasswordHash)
 
   if (!isMatch) {
     throw new ClientError('Invalid master password', 401)

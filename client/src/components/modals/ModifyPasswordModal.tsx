@@ -5,7 +5,6 @@ import copy from 'copy-to-clipboard'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 
-import { encrypt } from '@lifeforge/api'
 import {
   ColorField,
   FormModal,
@@ -17,6 +16,7 @@ import {
 } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
+import { encrypt } from '@/utils/crypto'
 
 const schema = z.object({
   icon: z.string().min(1, 'Required'),
@@ -27,8 +27,7 @@ const schema = z.object({
   username: z.string().optional().default('').catch(''),
   password: z.string().min(1, 'Required'),
   name: z.string().min(1, 'Required'),
-  category: z.string().optional(),
-  master: z.string().optional().catch('')
+  category: z.string().optional()
 })
 
 function ModifyPasswordModal({
@@ -77,8 +76,7 @@ function ModifyPasswordModal({
       website: initialData?.website || '',
       username: initialData?.username || '',
       password: initialData?.decrypted || '',
-      category: initialData?.category || '',
-      master: ''
+      category: initialData?.category || ''
     },
     resolver: zodResolver(schema)
   })
@@ -96,18 +94,16 @@ function ModifyPasswordModal({
       submissionConfig={{
         template: type,
         handler: async data => {
-          const challenge = await forgeAPI.entries.getChallenge.query()
-
-          const encryptedMaster = encrypt(masterPassword, challenge)
-
-          const encryptedPassword = encrypt(data.password, challenge)
+          const encryptedPassword = await encrypt(
+            data.password,
+            masterPassword
+          )
 
           await mutation.mutateAsync({
             ...data,
             username: data.username || '',
             category: data.category ?? '',
-            password: encryptedPassword,
-            master: encryptedMaster
+            password: encryptedPassword
           })
         }
       }}

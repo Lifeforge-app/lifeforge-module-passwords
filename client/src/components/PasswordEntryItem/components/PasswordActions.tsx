@@ -20,7 +20,7 @@ import {
   useDeletePassword,
   useRotatePassword
 } from '@/hooks'
-import { getDecryptedPassword } from '@/utils/getDecryptedPassword'
+import { decrypt } from '@/utils/crypto'
 
 import type { PasswordEntry } from '../../..'
 
@@ -42,7 +42,7 @@ function PasswordActions({
   const { handleDeletePassword } = useDeletePassword(password)
 
   const { decryptedPassword, toggleDecrypt, setDecryptedPassword } =
-    useDecryptPassword(masterPassword, password.id)
+    useDecryptPassword(masterPassword, password.password)
 
   const { rotatePassword, rotateLoading } = useRotatePassword(
     masterPassword,
@@ -54,7 +54,7 @@ function PasswordActions({
 
   async function handleEdit() {
     try {
-      const decrypted = await getDecryptedPassword(masterPassword, password.id)
+      const decrypted = await decrypt(password.password, masterPassword)
 
       open(ModifyPasswordModal, {
         type: 'update',
@@ -62,7 +62,7 @@ function PasswordActions({
         masterPassword
       })
     } catch {
-      toast.error("Couldn't fetch the password. Please try again.")
+      toast.error("Couldn't decrypt the password. Please try again.")
     }
   }
 
@@ -135,7 +135,7 @@ function PasswordActions({
           loading={copyLoading}
           p="sm"
           variant="plain"
-          onClick={() => copyPassword(password.id, decryptedPassword)}
+          onClick={() => copyPassword(password.password, decryptedPassword)}
         />
         <ContextMenu>
           <ContextMenuItem
@@ -158,7 +158,7 @@ function PasswordActions({
             icon="tabler:copy"
             label="Copy Password"
             loading={copyLoading}
-            onClick={() => copyPassword(password.id, decryptedPassword)}
+            onClick={() => copyPassword(password.password, decryptedPassword)}
           />
           <ContextMenuItem
             icon={password.pinned ? 'tabler:pin-filled' : 'tabler:pin'}

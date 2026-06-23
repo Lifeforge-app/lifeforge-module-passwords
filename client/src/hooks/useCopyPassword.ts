@@ -3,21 +3,21 @@ import copy from 'copy-to-clipboard'
 
 import { toast } from '@lifeforge/ui'
 
-import { getDecryptedPassword } from '@/utils/getDecryptedPassword'
+import { decrypt } from '@/utils/crypto'
 
 export default function useCopyPassword(masterPassword: string) {
   const [copyLoading, setCopyLoading] = useState(false)
 
   const copyPassword = useCallback(
-    async (passwordId: string, decryptedPassword?: string | null) => {
+    async (encryptedPassword: string, decryptedPassword?: string | null) => {
       setCopyLoading(true)
 
       if (decryptedPassword) {
         copy(decryptedPassword)
         toast.success('Password copied!')
       } else {
-        const decrypted = await getDecryptedPassword(masterPassword, passwordId)
-        copy(decrypted)
+        const result = await decrypt(encryptedPassword, masterPassword)
+        copy(result)
         toast.success('Password copied!')
       }
 

@@ -1,7 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
-import { encrypt } from '@lifeforge/api'
 import { useModuleTranslation } from '@lifeforge/localization'
 import {
   Button,
@@ -15,6 +14,7 @@ import {
 } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
+import { decrypt } from '@/utils/crypto'
 
 import type { PasswordEntry } from '..'
 import useFilter from '../hooks/useFilter'
@@ -31,23 +31,24 @@ function ContentHeader({
   handleCreatePassword: () => void
 }) {
   const { t } = useModuleTranslation()
+  const queryClient = useQueryClient()
   const { setIsSidebarOpen } = useModuleSidebarState()
   const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
   const { filter, updateFilter } = useFilter()
 
   const handleExport = useCallback(async () => {
     try {
-      const challenge = await forgeAPI.entries.getChallenge.query()
+      const entries =
+        queryClient.getQueryData<PasswordEntry[]>(
+          forgeAPI.entries.list.key
+        ) || []
 
-      if (!challenge) {
-        toast.error('Failed to export passwords')
-
-        return
-      }
-
-      const entries = await forgeAPI.entries.exportEntries.mutate({
-        master: encrypt(masterPassword, challenge)
-      })
+      const decryptedEntries = await Promise.all(
+        entries.map(async entry => ({
+          ...entry,
+          password: await decrypt(entry.password, masterPassword)
+        }))
+      )
 
       const headers = [
         'Name',
@@ -59,7 +60,7 @@ function ContentHeader({
 
       const csvContent = [
         headers.join(','),
-        ...entries.map((row: PasswordEntry) =>
+        ...decryptedEntries.map((row: PasswordEntry) =>
           [
             row.name,
             row.username,
@@ -88,7 +89,7 @@ function ContentHeader({
       console.error(error)
       toast.error('Failed to export passwords')
     }
-  }, [masterPassword])
+  }, [masterPassword, queryClient])
 
   return (
     <>

@@ -107,7 +107,7 @@ export const contract = {
   "entries": {
     "create": {
       "method": "post",
-      "description": "Create a new encrypted password entry",
+      "description": "Create a new password entry with pre-encrypted password",
       "noAuth": false,
       "encrypted": true,
       "isDownloadable": false,
@@ -137,9 +137,6 @@ export const contract = {
             },
             "category": {
               "type": "string"
-            },
-            "master": {
-              "type": "string"
             }
           },
           "required": [
@@ -149,156 +146,13 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "category",
-            "master"
+            "category"
           ],
           "additionalProperties": false
         }
       },
       "output": {
         "NO_CONTENT": true
-      }
-    },
-    "decrypt": {
-      "method": "post",
-      "description": "Decrypt and retrieve a password entry.",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "query": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "master": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "master"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "string"
-        },
-        "NOT_FOUND": true
-      }
-    },
-    "exportEntries": {
-      "method": "post",
-      "description": "Export all password entries decrypted",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "master": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "master"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "website": {
-                "type": "string"
-              },
-              "username": {
-                "type": "string"
-              },
-              "password": {
-                "type": "string"
-              },
-              "icon": {
-                "type": "string"
-              },
-              "color": {
-                "type": "string"
-              },
-              "pinned": {
-                "type": "boolean"
-              },
-              "category": {
-                "type": "string"
-              },
-              "last_password_updated": {
-                "type": "string"
-              },
-              "created": {
-                "type": "string"
-              },
-              "updated": {
-                "type": "string"
-              },
-              "id": {
-                "type": "string"
-              },
-              "collectionId": {
-                "type": "string"
-              },
-              "collectionName": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "website",
-              "username",
-              "password",
-              "icon",
-              "color",
-              "pinned",
-              "category",
-              "last_password_updated",
-              "created",
-              "updated",
-              "id",
-              "collectionId",
-              "collectionName"
-            ],
-            "additionalProperties": false
-          }
-        }
-      }
-    },
-    "getChallenge": {
-      "method": "get",
-      "description": "Retrieve challenge token for password encryption",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "string"
-        }
       }
     },
     "list": {
@@ -334,6 +188,9 @@ export const contract = {
               "username": {
                 "type": "string"
               },
+              "password": {
+                "type": "string"
+              },
               "pinned": {
                 "type": "boolean"
               },
@@ -341,9 +198,6 @@ export const contract = {
                 "type": "string"
               },
               "category": {
-                "type": "string"
-              },
-              "password": {
                 "type": "string"
               }
             },
@@ -354,6 +208,7 @@ export const contract = {
               "color",
               "website",
               "username",
+              "password",
               "pinned",
               "last_password_updated",
               "category"
@@ -462,9 +317,6 @@ export const contract = {
             },
             "category": {
               "type": "string"
-            },
-            "master": {
-              "type": "string"
             }
           },
           "required": [
@@ -474,8 +326,7 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "category",
-            "master"
+            "category"
           ],
           "additionalProperties": false
         }

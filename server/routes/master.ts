@@ -1,13 +1,13 @@
-import bcrypt from 'bcryptjs'
-import { v4 } from 'uuid'
+import { randomUUID } from 'node:crypto'
 import z from 'zod'
 
 import forge from '../forge'
+import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
 
-let challenge = v4()
+let challenge = randomUUID()
 
 setInterval(() => {
-  challenge = v4()
+  challenge = randomUUID()
 }, 1000 * 60)
 
 export const getChallenge = forge
@@ -40,11 +40,9 @@ export const create = forge
       },
       response
     }) => {
-      const salt = await bcrypt.genSalt(10)
-
       const decryptedMaster = decrypt2(password, challenge)
 
-      const masterPasswordHash = await bcrypt.hash(decryptedMaster, salt)
+      const masterPasswordHash = await hash(decryptedMaster)
 
       await pb.instance
         .collection('users')
@@ -85,9 +83,12 @@ export const verify = forge
 
       const { masterPasswordHash } = user
 
-      return response.ok(
-        await bcrypt.compare(decryptedMaster, masterPasswordHash)
+      const isMatch = await verifyPasswordHash(
+        decryptedMaster,
+        masterPasswordHash
       )
+
+      return response.ok(isMatch)
     }
   )
 

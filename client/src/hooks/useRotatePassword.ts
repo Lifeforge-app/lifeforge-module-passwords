@@ -2,12 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import copy from 'copy-to-clipboard'
 import { useCallback, useState } from 'react'
 
-import { encrypt } from '@lifeforge/api'
 import { ConfirmationModal, toast, useModalStore } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
+import { encrypt } from '@/utils/crypto'
 
 const ALPHABETS = 'abcdefghijklmnopqrstuvwxyz'
 const ALPHABETS_UPPER = ALPHABETS.toUpperCase()
@@ -45,14 +45,11 @@ export default function useRotatePassword(
     setRotateLoading(true)
     const generatedPassword = generatePassword()
 
-    const challenge = await forgeAPI.entries.getChallenge.query()
-    const encryptedMaster = encrypt(masterPassword, challenge)
-    const encryptedPassword = encrypt(generatedPassword, challenge)
+    const encryptedPassword = await encrypt(generatedPassword, masterPassword)
 
     await rotateMutation.mutateAsync({
       ...password,
-      password: encryptedPassword,
-      master: encryptedMaster
+      password: encryptedPassword
     })
 
     copy(generatedPassword)
