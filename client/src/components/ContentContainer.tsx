@@ -1,15 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 
-import { encrypt } from '@lifeforge/api'
 import { useModuleTranslation } from '@lifeforge/localization'
 import {
-  Button,
-  ContextMenuItem,
   EmptyStateScreen,
   FAB,
-  ModuleHeader,
-  SearchInput,
+  Stack,
   WithQuery,
   toast,
   useModalStore
@@ -19,12 +15,13 @@ import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
 import ModifyPasswordModal from '../modals/ModifyPasswordModal'
+import ContentHeader from './ContentHeader'
 import PasswordEntryItem from './PasswordEntryItem'
 
 function ContentContainer({ masterPassword }: { masterPassword: string }) {
+  const { t } = useModuleTranslation()
   const queryClient = useQueryClient()
   const { open } = useModalStore()
-  const { t } = useModuleTranslation()
   const [query, setQuery] = useState('')
 
   const passwordListQuery = useQuery(
@@ -36,13 +33,9 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const filteredPasswordList = useMemo(() => {
     const passwordList = passwordListQuery.data
 
-    if (!passwordList) {
-      return []
-    }
+    if (!passwordList) return []
 
-    if (query === '') {
-      return passwordList
-    }
+    if (query === '') return passwordList
 
     return passwordList.filter(
       password =>
@@ -75,9 +68,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       )
     } catch {
       toast.error(t('error.pin'))
-      queryClient.invalidateQueries({
-        queryKey: ['passwords', 'entries']
-      })
+      queryClient.invalidateQueries({ queryKey: ['passwords', 'entries'] })
     }
   }
 
@@ -88,91 +79,13 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
     })
   }, [])
 
-  const handleExport = useCallback(async () => {
-    try {
-      const challenge = await forgeAPI.entries.getChallenge.query()
-
-      if (!challenge) {
-        toast.error('Failed to export passwords')
-
-        return
-      }
-
-      const entries = await forgeAPI.entries.exportEntries.mutate({
-        master: encrypt(masterPassword, challenge)
-      })
-
-      const headers = [
-        'Name',
-        'Username',
-        'Password',
-        'Website',
-        'Last Modified'
-      ]
-
-      const csvContent = [
-        headers.join(','),
-        ...entries.map((row: PasswordEntry) =>
-          [row.name, row.username, row.password, row.website, row.updated]
-            .map(field => `"${(field || '').replace(/"/g, '""')}"`)
-            .join(',')
-        )
-      ].join('\n')
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-
-      const link = document.createElement('a')
-
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob)
-
-        link.setAttribute('href', url)
-        link.setAttribute('download', 'passwords_export.csv')
-        link.style.visibility = 'hidden'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      }
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to export passwords')
-    }
-  }, [masterPassword])
-
   return (
     <>
-      <ModuleHeader
-        actionButton={
-          masterPassword !== '' && (
-            <div className="flex gap-2">
-              <Button
-                className="hidden lg:flex"
-                icon="tabler:plus"
-                tProps={{ item: t('items.password') }}
-                onClick={handleCreatePassword}
-              >
-                new
-              </Button>
-            </div>
-          )
-        }
-        contextMenuProps={{
-          children: (
-            <>
-              <ContextMenuItem
-                icon="tabler:file-export"
-                label="exportToCsv"
-                onClick={handleExport}
-              />
-            </>
-          )
-        }}
-      />
-      <SearchInput
-        debounceMs={300}
-        searchTarget="password"
-        value={query}
-        onChange={setQuery}
+      <ContentHeader
+        handleCreatePassword={handleCreatePassword}
+        masterPassword={masterPassword}
+        query={query}
+        setQuery={setQuery}
       />
       <WithQuery query={passwordListQuery}>
         {() =>
@@ -184,7 +97,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
               }}
             />
           ) : (
-            <div className="my-8 flex w-full flex-col gap-3">
+            <Stack gap="sm" mb="xl" mt="md" width="100%">
               {filteredPasswordList.map(password => (
                 <PasswordEntryItem
                   key={password.id}
@@ -193,7 +106,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
                   pinPassword={pinPassword}
                 />
               ))}
-            </div>
+            </Stack>
           )
         }
       </WithQuery>

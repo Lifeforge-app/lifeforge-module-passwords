@@ -1,13 +1,34 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import copy from 'copy-to-clipboard'
+import { useForm } from 'react-hook-form'
+import z from 'zod'
 
-import { type InferInput } from '@lifeforge/api'
 import { encrypt } from '@lifeforge/api'
-import { FormModal, defineForm, toast } from '@lifeforge/ui'
+import {
+  ColorField,
+  FormModal,
+  IconField,
+  TextField,
+  createDefaultValues,
+  toast
+} from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
+
+const schema = z.object({
+  icon: z.string().min(1, 'Required'),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Color must be a valid hex color'),
+  website: z.string().min(1, 'Required'),
+  username: z.string().optional().default('').catch(''),
+  password: z.string().min(1, 'Required'),
+  name: z.string().min(1, 'Required'),
+  master: z.string().optional().catch('')
+})
 
 function ModifyPasswordModal({
   data: { type, initialData, masterPassword },
@@ -42,57 +63,85 @@ function ModifyPasswordModal({
     })
   )
 
-  const { formProps, formStateStore } = defineForm<
-    InferInput<(typeof forgeAPI.entries)[typeof type]>['body']
-  >({
-    icon: type === 'create' ? 'tabler:plus' : 'tabler:pencil',
-    namespace: 'apps.passwords',
-    title: `password.${type}`,
-    onClose,
-    submitButton: type
+  const form = useForm({
+    defaultValues: {
+      ...createDefaultValues(schema),
+      name: initialData?.name || '',
+      icon: initialData?.icon || 'tabler:lock',
+      color: initialData?.color || '#000000',
+      website: initialData?.website || '',
+      username: initialData?.username || '',
+      password: initialData?.decrypted || '',
+      master: ''
+    },
+    resolver: zodResolver(schema)
   })
-    .typesMap({
-      icon: 'icon',
-      color: 'color',
-      website: 'text',
-      username: 'text',
-      password: 'text',
-      name: 'text',
-      master: 'text'
-    })
-    .setupFields({
-      name: {
-        label: 'serviceName',
-        icon: 'tabler:lock',
-        placeholder: 'My Service',
-        required: true
-      },
-      icon: {
-        label: 'serviceIcon',
-        required: true
-      },
-      color: {
-        label: 'serviceColor',
-        required: true
-      },
-      website: {
-        label: 'website',
-        icon: 'tabler:link',
-        placeholder: 'https://example.com',
-        required: true
-      },
-      username: {
-        label: 'usernameOrEmail',
-        icon: 'tabler:user',
-        placeholder: 'johndoe1234'
-      },
-      password: {
-        label: 'password',
-        icon: 'tabler:key',
-        placeholder: 'Your password',
-        required: true,
-        isPassword: true,
-        actionButtonProps: {
+
+  return (
+    <FormModal
+      form={form}
+      submissionConfig={{
+        template: type,
+        handler: async data => {
+          const challenge = await forgeAPI.entries.getChallenge.query()
+
+          const encryptedMaster = encrypt(masterPassword, challenge)
+
+          const encryptedPassword = encrypt(data.password, challenge)
+
+          await mutation.mutateAsync({
+            ...data,
+            username: data.username || '',
+            password: encryptedPassword,
+            master: encryptedMaster
+          })
+        }
+      }}
+      uiConfig={{
+        icon: type === 'create' ? 'tabler:plus' : 'tabler:pencil',
+        namespace: 'apps.passwords',
+        title: `password.${type}`,
+        onClose
+      }}
+    >
+      <TextField
+        required
+        control={form.control}
+        icon="tabler:lock"
+        label="serviceName"
+        name="name"
+        placeholder="My Service"
+      />
+      <IconField
+        required
+        control={form.control}
+        label="serviceIcon"
+        name="icon"
+      />
+      <ColorField
+        required
+        control={form.control}
+        label="serviceColor"
+        name="color"
+      />
+      <TextField
+        required
+        control={form.control}
+        icon="tabler:link"
+        label="website"
+        name="website"
+        placeholder="https://example.com"
+      />
+      <TextField
+        control={form.control}
+        icon="tabler:user"
+        label="usernameOrEmail"
+        name="username"
+        placeholder="johndoe1234"
+      />
+      <TextField
+        required
+        actionButtonProps={{
           icon: 'tabler:dice',
           onClick: () => {
             const alphabets = 'abcdefghijklmnopqrstuvwxyz'
@@ -117,41 +166,22 @@ function ModifyPasswordModal({
               generatedPassword += allCharacters[randomIndex]
             }
 
-            formStateStore.setState({
-              password: generatedPassword
+            form.setValue('password', generatedPassword, {
+              shouldValidate: true
             })
 
             copy(generatedPassword)
             toast.success('Password copied to clipboard')
           }
-        }
-      }
-    })
-    .initialData({
-      name: initialData?.name || '',
-      icon: initialData?.icon || 'tabler:lock',
-      color: initialData?.color || '#000000',
-      website: initialData?.website || '',
-      username: initialData?.username || '',
-      password: initialData?.decrypted || '',
-      master: ''
-    })
-    .onSubmit(async data => {
-      const challenge = await forgeAPI.entries.getChallenge.query()
-
-      const encryptedMaster = encrypt(masterPassword, challenge)
-
-      const encryptedPassword = encrypt(data.password, challenge)
-
-      await mutation.mutateAsync({
-        ...data,
-        password: encryptedPassword,
-        master: encryptedMaster
-      })
-    })
-    .build()
-
-  return <FormModal {...formProps} />
+        }}
+        control={form.control}
+        icon="tabler:key"
+        label="password"
+        name="password"
+        placeholder="Your password"
+      />
+    </FormModal>
+  )
 }
 
 export default ModifyPasswordModal

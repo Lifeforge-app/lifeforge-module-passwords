@@ -135,13 +135,7 @@ export const contract = {
             "color": {
               "type": "string"
             },
-            "id": {
-              "type": "string"
-            },
-            "collectionId": {
-              "type": "string"
-            },
-            "collectionName": {
+            "category": {
               "type": "string"
             },
             "master": {
@@ -155,9 +149,7 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "id",
-            "collectionId",
-            "collectionName",
+            "category",
             "master"
           ],
           "additionalProperties": false
@@ -251,6 +243,9 @@ export const contract = {
               "pinned": {
                 "type": "boolean"
               },
+              "category": {
+                "type": "string"
+              },
               "created": {
                 "type": "string"
               },
@@ -275,6 +270,7 @@ export const contract = {
               "icon",
               "color",
               "pinned",
+              "category",
               "created",
               "updated",
               "id",
@@ -338,6 +334,9 @@ export const contract = {
                 "type": "boolean"
               },
               "updated": {
+                "type": "string"
+              },
+              "password": {
                 "type": "string"
               }
             },
@@ -453,13 +452,7 @@ export const contract = {
             "color": {
               "type": "string"
             },
-            "id": {
-              "type": "string"
-            },
-            "collectionId": {
-              "type": "string"
-            },
-            "collectionName": {
+            "category": {
               "type": "string"
             },
             "master": {
@@ -473,9 +466,7 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "id",
-            "collectionId",
-            "collectionName",
+            "category",
             "master"
           ],
           "additionalProperties": false
