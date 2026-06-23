@@ -3,18 +3,18 @@ import copy from 'copy-to-clipboard'
 import { useCallback, useState } from 'react'
 
 import { ConfirmationModal, toast, useModalStore } from '@lifeforge/ui'
+import { useModuleTranslation } from '@lifeforge/localization'
 
 import { forgeAPI } from '@/manifest'
+import { encrypt } from '@/utils/crypto'
 
 import type { PasswordEntry } from '..'
-import { encrypt } from '@/utils/crypto'
 
 const ALPHABETS = 'abcdefghijklmnopqrstuvwxyz'
 const ALPHABETS_UPPER = ALPHABETS.toUpperCase()
 const NUMBERS = '0123456789'
 const SYMBOLS = '!@#$%^&*()_+[]{}|;:,.<>?'
 const ALL_CHARACTERS = `${ALPHABETS}${ALPHABETS_UPPER}${NUMBERS}${SYMBOLS}`
-
 const PASSWORD_LENGTH = 16
 
 function generatePassword(): string {
@@ -29,12 +29,13 @@ function generatePassword(): string {
 }
 
 export default function useRotatePassword(
-  masterPassword: string,
+  vek: CryptoKey | null,
   password: PasswordEntry,
   setDecryptedPassword: (val: string) => void
 ) {
   const queryClient = useQueryClient()
   const { open } = useModalStore()
+  const { t } = useModuleTranslation()
   const [rotateLoading, setRotateLoading] = useState(false)
 
   const rotateMutation = useMutation(
@@ -42,22 +43,25 @@ export default function useRotatePassword(
   )
 
   const doRotate = useCallback(async () => {
+    if (!vek) return
+
     setRotateLoading(true)
     const generatedPassword = generatePassword()
 
-    const encryptedPassword = await encrypt(generatedPassword, masterPassword)
+    const encryptedPassword = await encrypt(generatedPassword, vek)
 
     await rotateMutation.mutateAsync({
       ...password,
-      password: encryptedPassword
+      password: encryptedPassword,
+      password_changed: true
     })
 
     copy(generatedPassword)
-    toast.success('Password copied to clipboard')
+    toast.success(t('toasts.passwordCopied'))
     setRotateLoading(false)
     queryClient.invalidateQueries({ queryKey: forgeAPI.entries.list.key })
     setDecryptedPassword(generatedPassword)
-  }, [masterPassword, password])
+  }, [vek, password, rotateMutation, queryClient, setDecryptedPassword])
 
   const rotatePassword = useCallback(() => {
     open(ConfirmationModal, {
@@ -66,7 +70,7 @@ export default function useRotatePassword(
       confirmButton: 'Rotate',
       onConfirm: doRotate
     })
-  }, [password, doRotate])
+  }, [password, doRotate, open])
 
   return { rotatePassword, rotateLoading }
 }

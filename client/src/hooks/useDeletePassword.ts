@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { ConfirmationModal, toast, useModalStore } from '@lifeforge/ui'
+import { useModuleTranslation } from '@lifeforge/localization'
 
 import { forgeAPI } from '@/manifest'
 
@@ -10,6 +11,7 @@ import type { PasswordEntry } from '..'
 export default function useDeletePassword(password: PasswordEntry) {
   const queryClient = useQueryClient()
   const { open } = useModalStore()
+  const { t } = useModuleTranslation()
 
   const deleteMutation = useMutation(
     forgeAPI.entries.remove.input({ id: password.id }).mutationOptions({
@@ -17,7 +19,7 @@ export default function useDeletePassword(password: PasswordEntry) {
         queryClient.invalidateQueries({ queryKey: forgeAPI.entries.list.key })
       },
       onError: () => {
-        toast.error('Failed to delete password. Please try again.')
+        toast.error(t('toasts.entryDeleteFailed'))
       }
     })
   )

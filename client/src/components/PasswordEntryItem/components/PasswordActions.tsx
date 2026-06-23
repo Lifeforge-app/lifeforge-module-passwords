@@ -27,42 +27,45 @@ import type { PasswordEntry } from '../../..'
 dayjs.extend(relativeTime)
 
 function PasswordActions({
-  masterPassword,
   password,
   pinPassword,
-  t
+  t,
+  vek
 }: {
-  masterPassword: string
   password: PasswordEntry
   pinPassword: (id: string) => Promise<void>
   t: (key: string) => string
+  vek: CryptoKey | null
 }) {
   const { open } = useModalStore()
-  const { copyPassword, copyLoading } = useCopyPassword(masterPassword)
-  const { handleDeletePassword } = useDeletePassword(password)
+  const { copyPassword, copyLoading } = useCopyPassword(vek)
 
   const { decryptedPassword, toggleDecrypt, setDecryptedPassword } =
-    useDecryptPassword(masterPassword, password.password)
+    useDecryptPassword(vek, password.password)
+
+  const [loading, onDecrypt] = usePromiseLoading(toggleDecrypt)
 
   const { rotatePassword, rotateLoading } = useRotatePassword(
-    masterPassword,
+    vek,
     password,
     setDecryptedPassword
   )
 
-  const [loading, onDecrypt] = usePromiseLoading(toggleDecrypt)
+  const { handleDeletePassword } = useDeletePassword(password)
 
   async function handleEdit() {
+    if (!vek) return
+
     try {
-      const decrypted = await decrypt(password.password, masterPassword)
+      const decrypted = await decrypt(password.password, vek)
 
       open(ModifyPasswordModal, {
         type: 'update',
         initialData: { ...password, decrypted },
-        masterPassword
+        vek
       })
     } catch {
-      toast.error("Couldn't decrypt the password. Please try again.")
+      toast.error(t('toasts.decryptFailed'))
     }
   }
 

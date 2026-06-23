@@ -70,7 +70,7 @@ function ModifyCategoriesModal({
       uiConfig={{
         icon: modifyType === 'create' ? 'tabler:plus' : 'tabler:pencil',
         namespace: 'apps.passwords',
-        title: `modals.category.${modifyType}`,
+        title: `category.${modifyType}`,
         onClose
       }}
     >

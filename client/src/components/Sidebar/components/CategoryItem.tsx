@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { useModuleTranslation } from '@lifeforge/localization'
 import {
   ConfirmationModal,
   ContextMenuItem,
@@ -18,6 +19,7 @@ function CategoryItem({ category }: { category: PasswordCategory }) {
   const { open } = useModalStore()
   const { updateFilter, filter } = useFilter()
   const queryClient = useQueryClient()
+  const { t } = useModuleTranslation()
 
   const deleteMutation = useMutation(
     forgeAPI.categories.remove.input({ id: category.id }).mutationOptions({
@@ -30,7 +32,7 @@ function CategoryItem({ category }: { category: PasswordCategory }) {
         })
       },
       onError: () => {
-        toast.error('Failed to delete category. Please try again.')
+        toast.error(t('toasts.categoryDeleteFailed'))
       }
     })
   )

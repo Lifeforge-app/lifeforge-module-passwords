@@ -326,6 +326,78 @@ export const schemas = {
       viewQuery:
         'SELECT\n  passwords__categories.id,\n  passwords__categories.name,\n  passwords__categories.color,\n  passwords__categories.icon,\n  COUNT(passwords__entries.id) AS amount\nFROM passwords__categories\nLEFT JOIN passwords__entries\n  ON passwords__categories.id = passwords__entries.category\nGROUP BY passwords__categories.id;'
     }
+  },
+  config: {
+    schema: z.object({
+      master_hash: z.string(),
+      wrapped_vek: z.string(),
+      recovery_wrapped_vek: z.string()
+    }),
+    raw: {
+      listRule: '@request.auth.id != ""',
+      viewRule: '@request.auth.id != ""',
+      createRule: '@request.auth.id != ""',
+      updateRule: '@request.auth.id != ""',
+      deleteRule: '@request.auth.id != ""',
+      name: 'passwords__config',
+      type: 'base',
+      fields: [
+        {
+          autogeneratePattern: '[a-z0-9]{15}',
+          hidden: false,
+          max: 15,
+          min: 15,
+          name: 'id',
+          pattern: '^[a-z0-9]+$',
+          presentable: false,
+          primaryKey: true,
+          required: true,
+          system: true,
+          type: 'text'
+        },
+        {
+          autogeneratePattern: '',
+          hidden: false,
+          max: 0,
+          min: 0,
+          name: 'master_hash',
+          pattern: '',
+          presentable: false,
+          primaryKey: false,
+          required: true,
+          system: false,
+          type: 'text'
+        },
+        {
+          autogeneratePattern: '',
+          hidden: false,
+          max: 0,
+          min: 0,
+          name: 'wrapped_vek',
+          pattern: '',
+          presentable: false,
+          primaryKey: false,
+          required: true,
+          system: false,
+          type: 'text'
+        },
+        {
+          autogeneratePattern: '',
+          hidden: false,
+          max: 0,
+          min: 0,
+          name: 'recovery_wrapped_vek',
+          pattern: '',
+          presentable: false,
+          primaryKey: false,
+          required: false,
+          system: false,
+          type: 'text'
+        }
+      ],
+      indexes: [],
+      system: false
+    }
   }
 }
 

@@ -17,6 +17,7 @@ import {
 import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
+import { useVEK } from '../hooks'
 import useFilter from '../hooks/useFilter'
 import ContentHeader from './ContentHeader'
 import PasswordEntryItem from './PasswordEntryItem'
@@ -33,6 +34,17 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
     forgeAPI.entries.list.queryOptions({
       enabled: masterPassword !== ''
     })
+  )
+
+  const wrappedVEKQuery = useQuery(
+    forgeAPI.master.getWrappedVEK.queryOptions({
+      enabled: masterPassword !== ''
+    })
+  )
+
+  const { vek } = useVEK(
+    masterPassword,
+    wrappedVEKQuery.data?.wrapped_vek || ''
   )
 
   const filteredPasswordList = useMemo(() => {
@@ -88,11 +100,13 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
   }
 
   const handleCreatePassword = useCallback(() => {
+    if (!vek) return
+
     open(ModifyPasswordModal, {
       type: 'create',
-      masterPassword
+      vek
     })
-  }, [])
+  }, [open, vek])
 
   return (
     <>
@@ -101,6 +115,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
         masterPassword={masterPassword}
         query={searchQuery}
         setQuery={setSearchQuery}
+        vek={vek}
       />
       <LayoutWithSidebar>
         <Sidebar />
@@ -120,9 +135,9 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
                     {filteredPasswordList.map(password => (
                       <PasswordEntryItem
                         key={password.id}
-                        masterPassword={masterPassword}
                         password={password}
                         pinPassword={pinPassword}
+                        vek={vek}
                       />
                     ))}
                   </Stack>

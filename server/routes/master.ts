@@ -1,14 +1,37 @@
-import { randomUUID } from 'node:crypto'
+import crypto, { randomUUID } from 'node:crypto'
 import z from 'zod'
 
+import type { IPBService } from '@lifeforge/server-utils'
+
 import forge from '../forge'
+import schema from '../schema'
 import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
+import { generateAndWrapRecoveryVEK } from '../utils/recoveryHelper'
 
 let challenge = randomUUID()
 
 setInterval(() => {
   challenge = randomUUID()
 }, 1000 * 60)
+
+async function getConfigRecord(pb: IPBService<typeof schema>) {
+  const records = await pb.getFullList.collection('config').execute()
+
+  return records[0] || null
+}
+
+export const hasMasterPassword = forge
+  .query({
+    description: 'Check if a master password has been configured',
+    output: {
+      OK: z.boolean()
+    }
+  })
+  .callback(async ({ pb, response }) => {
+    const config = await getConfigRecord(pb)
+
+    return response.ok(!!config?.master_hash)
+  })
 
 export const getChallenge = forge
   .query({
@@ -28,7 +51,9 @@ export const create = forge
       })
     },
     output: {
-      NO_CONTENT: true
+      CREATED: z.object({
+        recovery_key: z.string()
+      })
     }
   })
   .callback(
@@ -42,15 +67,50 @@ export const create = forge
     }) => {
       const decryptedMaster = decrypt2(password, challenge)
 
-      const masterPasswordHash = await hash(decryptedMaster)
+      const master_hash = await hash(decryptedMaster)
 
-      await pb.instance
-        .collection('users')
-        .update(pb.instance.authStore.record!.id, {
-          masterPasswordHash
-        })
+      const derivedKey = crypto
+        .createHash('sha256')
+        .update(decryptedMaster)
+        .digest('base64')
+        .slice(0, 32)
 
-      return response.noContent()
+      const vek = crypto.randomBytes(32)
+      const iv = crypto.randomBytes(12)
+      const cipher = crypto.createCipheriv(
+        'aes-256-gcm',
+        Buffer.from(derivedKey, 'utf-8'),
+        iv
+      )
+
+      const encryptedVEK = Buffer.concat([cipher.update(vek), cipher.final()])
+      const tag = cipher.getAuthTag()
+      const wrapped_vek = Buffer.concat([iv, encryptedVEK, tag]).toString(
+        'base64'
+      )
+
+      const { recovery_key, recovery_wrapped_vek } =
+        generateAndWrapRecoveryVEK(vek)
+
+      const existing = await getConfigRecord(pb)
+
+      const data = {
+        master_hash,
+        wrapped_vek,
+        recovery_wrapped_vek
+      }
+
+      if (existing) {
+        await pb.update
+          .collection('config')
+          .id(existing.id)
+          .data(data)
+          .execute()
+      } else {
+        await pb.create.collection('config').data(data).execute()
+      }
+
+      return response.created({ recovery_key })
     }
   )
 
@@ -77,20 +137,124 @@ export const verify = forge
     }) => {
       const decryptedMaster = decrypt2(password, challenge)
 
-      const user = await pb.instance
-        .collection('users')
-        .getOne(pb.instance.authStore.record!.id)
+      const config = await getConfigRecord(pb)
 
-      const { masterPasswordHash } = user
+      if (!config) {
+        return response.ok(false)
+      }
 
       const isMatch = await verifyPasswordHash(
         decryptedMaster,
-        masterPasswordHash
+        config.master_hash
       )
 
       return response.ok(isMatch)
     }
   )
+
+export const getWrappedVEK = forge
+  .query({
+    description: 'Get the wrapped VEK for the authenticated user',
+    output: {
+      OK: z.object({
+        wrapped_vek: z.string()
+      })
+    }
+  })
+  .callback(async ({ pb, response }) => {
+    const config = await getConfigRecord(pb)
+
+    return response.ok({
+      wrapped_vek: config?.wrapped_vek || ''
+    })
+  })
+
+export const updateWrappedVEK = forge
+  .mutation({
+    description:
+      'Update the wrapped VEK (used during master password rotation)',
+    input: {
+      body: z.object({
+        password: z.string(),
+        new_password: z.string(),
+        new_wrapped_vek: z.string()
+      })
+    },
+    output: {
+      OK: z.object({
+        recovery_key: z.string()
+      }),
+      UNAUTHORIZED: true
+    }
+  })
+  .callback(
+    async ({
+      pb,
+      body: { password, new_password, new_wrapped_vek },
+      core: {
+        crypto: { decrypt2 }
+      },
+      response
+    }) => {
+      const decryptedMaster = decrypt2(password, challenge)
+      const decryptedNewMaster = decrypt2(new_password, challenge)
+
+      const config = await getConfigRecord(pb)
+
+      if (!config) {
+        return response.unauthorized()
+      }
+
+      const isMatch = await verifyPasswordHash(
+        decryptedMaster,
+        config.master_hash
+      )
+
+      if (!isMatch) {
+        return response.unauthorized()
+      }
+
+      const new_master_hash = await hash(decryptedNewMaster)
+
+      const oldDerivedKey = crypto
+        .createHash('sha256')
+        .update(decryptedMaster)
+        .digest('base64')
+        .slice(0, 32)
+
+      const oldWrappedData = Buffer.from(config.wrapped_vek, 'base64')
+      const oldIV = oldWrappedData.subarray(0, 12)
+      const oldCiphertext = oldWrappedData.subarray(12)
+      const oldDecipher = crypto.createDecipheriv(
+        'aes-256-gcm',
+        Buffer.from(oldDerivedKey, 'utf-8'),
+        oldIV
+      )
+
+      oldDecipher.setAuthTag(oldCiphertext.subarray(-16))
+      const vek = Buffer.concat([
+        oldDecipher.update(oldCiphertext.subarray(0, -16)),
+        oldDecipher.final()
+      ])
+
+      const { recovery_key, recovery_wrapped_vek } =
+        generateAndWrapRecoveryVEK(vek)
+
+      await pb.update
+        .collection('config')
+        .id(config.id)
+        .data({
+          master_hash: new_master_hash,
+          wrapped_vek: new_wrapped_vek,
+          recovery_wrapped_vek
+        })
+        .execute()
+
+      return response.ok({ recovery_key })
+    }
+  )
+
+export { challenge as masterChallenge }
 
 export const validateOTP = forge
   .mutation({

@@ -10,6 +10,7 @@ import {
   SearchInput,
   TagsFilter,
   toast,
+  useModalStore,
   useModuleSidebarState
 } from '@lifeforge/ui'
 
@@ -18,25 +19,31 @@ import { decrypt } from '@/utils/crypto'
 
 import type { PasswordEntry } from '..'
 import useFilter from '../hooks/useFilter'
+import RotateMasterPasswordModal from './modals/RotateMasterPasswordModal'
 
 function ContentHeader({
   masterPassword,
   query,
   setQuery,
-  handleCreatePassword
+  handleCreatePassword,
+  vek
 }: {
   masterPassword: string
   query: string
   setQuery: (val: string) => void
   handleCreatePassword: () => void
+  vek: CryptoKey | null
 }) {
   const { t } = useModuleTranslation()
   const queryClient = useQueryClient()
+  const { open } = useModalStore()
   const { setIsSidebarOpen } = useModuleSidebarState()
   const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
   const { filter, updateFilter } = useFilter()
 
   const handleExport = useCallback(async () => {
+    if (!vek) return
+
     try {
       const entries =
         queryClient.getQueryData<PasswordEntry[]>(
@@ -46,7 +53,7 @@ function ContentHeader({
       const decryptedEntries = await Promise.all(
         entries.map(async entry => ({
           ...entry,
-          password: await decrypt(entry.password, masterPassword)
+          password: await decrypt(entry.password, vek)
         }))
       )
 
@@ -87,9 +94,9 @@ function ContentHeader({
       }
     } catch (error) {
       console.error(error)
-      toast.error('Failed to export passwords')
+      toast.error(t('toasts.exportFailed'))
     }
-  }, [masterPassword, queryClient])
+  }, [vek, queryClient])
 
   return (
     <>
@@ -116,6 +123,15 @@ function ContentHeader({
                 label="exportToCsv"
                 onClick={handleExport}
               />
+              {vek && (
+                <ContextMenuItem
+                  icon="tabler:key"
+                  label="rotateMasterPassword"
+                  onClick={() => {
+                    open(RotateMasterPasswordModal, { vek })
+                  }}
+                />
+              )}
             </>
           )
         }}

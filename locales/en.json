@@ -9,6 +9,14 @@
     "category": {
       "create": "Create Category",
       "update": "Update Category"
+    },
+    "masterPassword": {
+      "rotate": "Rotate Master Password"
+    },
+    "recovery": {
+      "generate": "Generate Recovery Key",
+      "display": "Recovery Key",
+      "recover": "Recover Account"
     }
   },
   "inputs": {
@@ -25,6 +33,17 @@
       "name": "Category Name",
       "color": "Category Color",
       "icon": "Category Icon"
+    },
+    "masterPassword": {
+      "existingPassword": "Existing Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password"
+    },
+    "recovery": {
+      "password": "Master Password",
+      "recoveryKey": "Recovery Key",
+    "newPassword": "New Master Password",
+      "confirmPassword": "Confirm New Master Password"
     }
   },
   "items": {
@@ -49,12 +68,34 @@
       "description": "No entries found for your search query. Please try another one."
     }
   },
+  "alerts": {
+    "saveRecoveryKey": "Save this key somewhere safe. It will not be shown again."
+  },
+  "toasts": {
+    "accountRecovered": "Account recovered successfully",
+    "recoverAccountFailed": "Failed to recover account",
+    "recoveryKeyCopied": "Recovery key copied",
+    "masterPasswordRotated": "Master password rotated successfully",
+    "rotateFailed": "Failed to rotate master password",
+    "exportFailed": "Failed to export passwords",
+    "entryModifyFailed": "Failed to modify password entry",
+    "passwordCopied": "Password copied to clipboard",
+    "decryptFailed": "Couldn't decrypt the password. Please try again.",
+    "entryDeleteFailed": "Failed to delete password. Please try again.",
+    "categoryDeleteFailed": "Failed to delete category. Please try again."
+  },
   "lastUpdated": "Last Updated",
   "buttons": {
     "copyPassword": "Copy Password",
     "rotatePassword": "Rotate Password",
     "showPassword": "Show Password",
     "hidePassword": "Hide Password",
-    "exportToCsv": "Export to CSV"
+    "exportToCsv": "Export to CSV",
+    "rotateMasterPassword": "Rotate Master Password",
+    "generateRecoveryKey": "Generate Recovery Key",
+    "recoverAccount": "Recover Account",
+    "copyRecoveryKey": "Copy",
+    "downloadRecoveryKey": "Download",
+    "closeRecoveryKey": "Done"
   }
 }

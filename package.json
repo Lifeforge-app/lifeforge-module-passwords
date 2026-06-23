@@ -17,7 +17,9 @@
     "@noble/hashes": "^2.2.0",
     "copy-to-clipboard": "^3.3.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "pocketbase": "^0.27.0"
+  },
   "lifeforge": {
     "icon": "tabler:key",
     "category": "Confidential"

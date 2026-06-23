@@ -2,10 +2,12 @@ import { useCallback, useState } from 'react'
 import copy from 'copy-to-clipboard'
 
 import { toast } from '@lifeforge/ui'
+import { useModuleTranslation } from '@lifeforge/localization'
 
 import { decrypt } from '@/utils/crypto'
 
-export default function useCopyPassword(masterPassword: string) {
+export default function useCopyPassword(vek: CryptoKey | null) {
+  const { t } = useModuleTranslation()
   const [copyLoading, setCopyLoading] = useState(false)
 
   const copyPassword = useCallback(
@@ -14,16 +16,16 @@ export default function useCopyPassword(masterPassword: string) {
 
       if (decryptedPassword) {
         copy(decryptedPassword)
-        toast.success('Password copied!')
-      } else {
-        const result = await decrypt(encryptedPassword, masterPassword)
+        toast.success(t('toasts.passwordCopied'))
+      } else if (vek) {
+        const result = await decrypt(encryptedPassword, vek)
         copy(result)
-        toast.success('Password copied!')
+        toast.success(t('toasts.passwordCopied'))
       }
 
       setCopyLoading(false)
     },
-    [masterPassword]
+    [vek]
   )
 
   return { copyPassword, copyLoading }

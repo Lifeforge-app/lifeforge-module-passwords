@@ -5,6 +5,7 @@ import copy from 'copy-to-clipboard'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
 
+import { useModuleTranslation } from '@lifeforge/localization'
 import {
   ColorField,
   FormModal,
@@ -31,7 +32,7 @@ const schema = z.object({
 })
 
 function ModifyPasswordModal({
-  data: { type, initialData, masterPassword },
+  data: { type, initialData, vek },
   onClose
 }: {
   data: {
@@ -39,12 +40,13 @@ function ModifyPasswordModal({
     initialData?: PasswordEntry & {
       decrypted?: string
     }
-    masterPassword: string
+    vek: CryptoKey
   }
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
   const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
+  const { t } = useModuleTranslation()
 
   const mutation = useMutation(
     (type === 'create'
@@ -62,7 +64,7 @@ function ModifyPasswordModal({
         })
       },
       onError: () => {
-        toast.error('Failed to modify password entry')
+        toast.error(t('toasts.entryModifyFailed'))
       }
     })
   )
@@ -94,16 +96,16 @@ function ModifyPasswordModal({
       submissionConfig={{
         template: type,
         handler: async data => {
-          const encryptedPassword = await encrypt(
-            data.password,
-            masterPassword
-          )
+          const encryptedPassword = await encrypt(data.password, vek)
+          const passwordChanged =
+            type === 'update' && data.password !== (initialData?.decrypted || '')
 
           await mutation.mutateAsync({
             ...data,
             username: data.username || '',
             category: data.category ?? '',
-            password: encryptedPassword
+            password: encryptedPassword,
+            ...(passwordChanged ? { password_changed: true } : {})
           })
         }
       }}
@@ -182,7 +184,7 @@ function ModifyPasswordModal({
             })
 
             copy(generatedPassword)
-            toast.success('Password copied to clipboard')
+            toast.success(t('toasts.passwordCopied'))
           }
         }}
         control={form.control}

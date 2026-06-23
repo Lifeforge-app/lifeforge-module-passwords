@@ -75,15 +75,19 @@ export const update = forge
       query: z.object({
         id: z.string()
       }),
-      body: passwordsSchemas.entries.omit({
-        pinned: true,
-        created: true,
-        updated: true,
-        last_password_updated: true,
-        collectionId: true,
-        id: true,
-        collectionName: true
-      })
+      body: passwordsSchemas.entries
+        .omit({
+          pinned: true,
+          created: true,
+          updated: true,
+          collectionId: true,
+          last_password_updated: true,
+          id: true,
+          collectionName: true
+        })
+        .extend({
+          password_changed: z.boolean().optional()
+        })
     },
     existenceCheck: {
       query: { id: 'entries' }
@@ -94,7 +98,15 @@ export const update = forge
     }
   })
   .callback(async ({ pb, query: { id }, body, response }) => {
-    await pb.update.collection('entries').id(id).data(body).execute()
+    const { password_changed, ...rest } = body
+
+    const data: Record<string, unknown> = { ...rest }
+
+    if (password_changed) {
+      data.last_password_updated = new Date().toISOString()
+    }
+
+    await pb.update.collection('entries').id(id).data(data).execute()
 
     return response.noContent()
   })

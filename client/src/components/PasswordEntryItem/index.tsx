@@ -9,11 +9,11 @@ import PasswordInfo from './components/PasswordInfo'
 function PasswordEntryItem({
   password,
   pinPassword,
-  masterPassword
+  vek
 }: {
   password: PasswordEntry
   pinPassword: (id: string) => Promise<void>
-  masterPassword: string
+  vek: CryptoKey | null
 }) {
   const { t } = useModuleTranslation()
 
@@ -33,10 +33,10 @@ function PasswordEntryItem({
       <Flex align="center" gap="sm" width="100%">
         <PasswordInfo password={password} />
         <PasswordActions
-          masterPassword={masterPassword}
           password={password}
           pinPassword={pinPassword}
           t={t}
+          vek={vek}
         />
       </Flex>
     </Card>

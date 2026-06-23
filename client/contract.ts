@@ -23,7 +23,19 @@ export const contract = {
         }
       },
       "output": {
-        "NO_CONTENT": true
+        "CREATED": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "recovery_key": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "recovery_key"
+          ],
+          "additionalProperties": false
+        }
       }
     },
     "getChallenge": {
@@ -39,6 +51,93 @@ export const contract = {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "string"
         }
+      }
+    },
+    "getWrappedVEK": {
+      "method": "get",
+      "description": "Get the wrapped VEK for the authenticated user",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {},
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "wrapped_vek": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "wrapped_vek"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "hasMasterPassword": {
+      "method": "get",
+      "description": "Check if a master password has been configured",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {},
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "boolean"
+        }
+      }
+    },
+    "masterChallenge": "c797fe36-f11c-47b2-9241-ae3e3cbb4da7",
+    "updateWrappedVEK": {
+      "method": "post",
+      "description": "Update the wrapped VEK (used during master password rotation)",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {
+        "body": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "password": {
+              "type": "string"
+            },
+            "new_password": {
+              "type": "string"
+            },
+            "new_wrapped_vek": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "password",
+            "new_password",
+            "new_wrapped_vek"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "recovery_key": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "recovery_key"
+          ],
+          "additionalProperties": false
+        },
+        "UNAUTHORIZED": true
       }
     },
     "validateOTP": {
@@ -317,6 +416,9 @@ export const contract = {
             },
             "category": {
               "type": "string"
+            },
+            "password_changed": {
+              "type": "boolean"
             }
           },
           "required": [
@@ -565,6 +667,105 @@ export const contract = {
         },
         "CONFLICT": true,
         "NOT_FOUND": true
+      }
+    }
+  },
+  "recovery": {
+    "generate": {
+      "method": "post",
+      "description": "Generate a recovery key that can unlock the VEK",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {
+        "body": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "password": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "password"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "recovery_key": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "recovery_key"
+          ],
+          "additionalProperties": false
+        },
+        "UNAUTHORIZED": true
+      }
+    },
+    "recover": {
+      "method": "post",
+      "description": "Recover account using recovery key and set a new master password",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {
+        "body": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "recovery_key": {
+              "type": "string"
+            },
+            "new_password": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "recovery_key",
+            "new_password"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output": {
+        "NO_CONTENT": true,
+        "BAD_REQUEST": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "string"
+        }
+      }
+    },
+    "status": {
+      "method": "get",
+      "description": "Check if a recovery key has been configured",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {},
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "has_recovery_key": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "has_recovery_key"
+          ],
+          "additionalProperties": false
+        }
       }
     }
   }
