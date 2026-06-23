@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { encrypt } from '@lifeforge/api'
@@ -8,14 +9,15 @@ import {
   Flex,
   ModuleHeader,
   SearchInput,
+  TagsFilter,
   toast,
-  useModalStore
+  useModuleSidebarState
 } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
-import ModifyPasswordModal from '../modals/ModifyPasswordModal'
+import useFilter from '../hooks/useFilter'
 
 function ContentHeader({
   masterPassword,
@@ -29,6 +31,9 @@ function ContentHeader({
   handleCreatePassword: () => void
 }) {
   const { t } = useModuleTranslation()
+  const { setIsSidebarOpen } = useModuleSidebarState()
+  const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
+  const { filter, updateFilter } = useFilter()
 
   const handleExport = useCallback(async () => {
     try {
@@ -36,6 +41,7 @@ function ContentHeader({
 
       if (!challenge) {
         toast.error('Failed to export passwords')
+
         return
       }
 
@@ -54,7 +60,13 @@ function ContentHeader({
       const csvContent = [
         headers.join(','),
         ...entries.map((row: PasswordEntry) =>
-          [row.name, row.username, row.password, row.website, row.updated]
+          [
+            row.name,
+            row.username,
+            row.password,
+            row.website,
+            row.last_password_updated
+          ]
             .map(field => `"${(field || '').replace(/"/g, '""')}"`)
             .join(',')
         )
@@ -107,12 +119,44 @@ function ContentHeader({
           )
         }}
       />
-      <SearchInput
-        debounceMs={300}
-        searchTarget="password"
-        value={query}
-        onChange={setQuery}
+      <TagsFilter
+        availableFilters={{
+          category: {
+            data:
+              categoriesQuery.data?.map(category => ({
+                id: category.id,
+                icon: category.icon,
+                color: category.color,
+                label: category.name
+              })) || [],
+            isColored: true
+          }
+        }}
+        values={{
+          category: filter.category
+        }}
+        onChange={{
+          category: value => {
+            updateFilter('category', value)
+          }
+        }}
       />
+      <Flex align="center" gap="md" mb="md">
+        <SearchInput
+          debounceMs={300}
+          searchTarget="password"
+          value={query}
+          onChange={setQuery}
+        />
+        <Button
+          display={{ base: 'flex', lg: 'none' }}
+          icon="tabler:category"
+          variant="plain"
+          onClick={() => {
+            setIsSidebarOpen(true)
+          }}
+        />
+      </Flex>
     </>
   )
 }

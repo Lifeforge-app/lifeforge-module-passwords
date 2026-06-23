@@ -5,20 +5,41 @@
     "password": {
       "create": "创建密码",
       "update": "更新密码"
+    },
+    "category": {
+      "create": "创建分类",
+      "update": "更新分类"
     }
   },
   "inputs": {
-    "serviceColor": "服务颜色",
-    "serviceName": "服务名称",
-    "website": "网站",
-    "password": "密码",
-    "usernameOrEmail": "用户名或电子邮件",
-    "serviceIcon": "服务图标"
+    "password": {
+      "serviceColor": "服务颜色",
+      "serviceName": "服务名称",
+      "website": "网站",
+      "password": "密码",
+      "usernameOrEmail": "用户名或电子邮件",
+      "serviceIcon": "服务图标",
+      "category": "分类"
+    },
+    "category": {
+      "name": "分类名称",
+      "color": "分类颜色",
+      "icon": "分类图标"
+    }
   },
   "items": {
     "password": "密码"
   },
+  "sidebar": {
+    "all": "全部密码",
+    "categories": "分类",
+    "allCategories": "全部分类"
+  },
   "empty": {
+    "categories": {
+      "title": "暂无分类",
+      "description": "您还没有创建任何分类。"
+    },
     "passwords": {
       "title": "没有密码",
       "description": "您还没有添加任何密码。点击上面的按钮添加一个。"

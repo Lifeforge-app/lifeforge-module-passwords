@@ -5,20 +5,41 @@
     "password": {
       "create": "Cipta Kata Laluan",
       "update": "Kemas Kini Kata Laluan"
+    },
+    "category": {
+      "create": "Cipta Kategori",
+      "update": "Kemas Kini Kategori"
     }
   },
   "inputs": {
-    "serviceColor": "Warna Perkhidmatan",
-    "serviceName": "Nama Perkhidmatan",
-    "website": "Laman Web",
-    "password": "Kata Laluan",
-    "usernameOrEmail": "Nama Pengguna atau E-mel",
-    "serviceIcon": "Ikon Perkhidmatan"
+    "password": {
+      "serviceColor": "Warna Perkhidmatan",
+      "serviceName": "Nama Perkhidmatan",
+      "website": "Laman Web",
+      "password": "Kata Laluan",
+      "usernameOrEmail": "Nama Pengguna atau E-mel",
+      "serviceIcon": "Ikon Perkhidmatan",
+      "category": "Kategori"
+    },
+    "category": {
+      "name": "Nama Kategori",
+      "color": "Warna Kategori",
+      "icon": "Ikon Kategori"
+    }
   },
   "items": {
     "password": "Kata Laluan"
   },
+  "sidebar": {
+    "all": "Semua Kata Laluan",
+    "categories": "Kategori",
+    "allCategories": "Semua Kategori"
+  },
   "empty": {
+    "categories": {
+      "title": "Tiada Kategori",
+      "description": "Anda belum membuat sebarang kategori lagi."
+    },
     "passwords": {
       "title": "Tiada Kata Laluan",
       "description": "Anda belum menambah sebarang kata laluan lagi. Klik butang di atas untuk menambah satu."

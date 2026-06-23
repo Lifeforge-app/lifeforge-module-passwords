@@ -5,20 +5,41 @@
     "password": {
       "create": "創建密碼",
       "update": "更新密碼"
+    },
+    "category": {
+      "create": "創建分類",
+      "update": "更新分類"
     }
   },
   "inputs": {
-    "serviceColor": "服務顏色",
-    "serviceName": "服務名稱",
-    "website": "網站",
-    "password": "密碼",
-    "usernameOrEmail": "用戶名或電子郵件",
-    "serviceIcon": "服務圖標"
+    "password": {
+      "serviceColor": "服務顏色",
+      "serviceName": "服務名稱",
+      "website": "網站",
+      "password": "密碼",
+      "usernameOrEmail": "用戶名或電子郵件",
+      "serviceIcon": "服務圖標",
+      "category": "分類"
+    },
+    "category": {
+      "name": "分類名稱",
+      "color": "分類顏色",
+      "icon": "分類圖標"
+    }
   },
   "items": {
     "password": "密碼"
   },
+  "sidebar": {
+    "all": "全部密碼",
+    "categories": "分類",
+    "allCategories": "全部分類"
+  },
   "empty": {
+    "categories": {
+      "title": "暫無分類",
+      "description": "您還沒有創建任何分類。"
+    },
     "passwords": {
       "title": "沒有密碼",
       "description": "您還沒有添加任何密碼。點擊上面的按鈕添加一個。"

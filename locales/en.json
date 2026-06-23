@@ -5,20 +5,41 @@
     "password": {
       "create": "Create Password",
       "update": "Update Password"
+    },
+    "category": {
+      "create": "Create Category",
+      "update": "Update Category"
     }
   },
   "inputs": {
-    "serviceColor": "Service Color",
-    "serviceName": "Service Name",
-    "website": "Website",
-    "password": "Password",
-    "usernameOrEmail": "Username or Email",
-    "serviceIcon": "Service Icon"
+    "password": {
+      "serviceColor": "Service Color",
+      "serviceName": "Service Name",
+      "website": "Website",
+      "password": "Password",
+      "usernameOrEmail": "Username or Email",
+      "serviceIcon": "Service Icon",
+      "category": "Password Category"
+    },
+    "category": {
+      "name": "Category Name",
+      "color": "Category Color",
+      "icon": "Category Icon"
+    }
   },
   "items": {
     "password": "Password"
   },
+  "sidebar": {
+    "all": "All Passwords",
+    "categories": "Categories",
+    "allCategories": "All Categories"
+  },
   "empty": {
+    "categories": {
+      "title": "No Categories",
+      "description": "You haven't created any categories yet."
+    },
     "passwords": {
       "title": "No Passwords",
       "description": "You haven't added any passwords yet. Click the button above to add one."

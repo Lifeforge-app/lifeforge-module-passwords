@@ -1,10 +1,30 @@
+import { useQuery } from '@tanstack/react-query'
+
 import { Flex, Icon, Text } from '@lifeforge/ui'
+
+import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '../../..'
 
 function PasswordInfo({ password }: { password: PasswordEntry }) {
+  const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
+
+  const categoryData = (categoriesQuery.data || []).find(
+    cat => cat.id === password.category
+  )
+
   return (
     <Flex align="center" gap="md" minWidth="0" width="100%">
+      {categoryData && (
+        <Flex
+          centered
+          flexShrink="0"
+          height="3.6em"
+          r="full"
+          style={{ backgroundColor: categoryData.color }}
+          width="4px"
+        />
+      )}
       <Flex
         centered
         shadow
@@ -21,9 +41,11 @@ function PasswordInfo({ password }: { password: PasswordEntry }) {
         />
       </Flex>
       <Flex direction="column" flex="1" minWidth="0">
-        <Text truncate size="xl" weight="semibold">
-          {password.name}
-        </Text>
+        <Flex align="center" gap="sm">
+          <Text truncate size="xl" weight="semibold">
+            {password.name}
+          </Text>
+        </Flex>
         <Text truncate color="muted">
           {password.username}
         </Text>

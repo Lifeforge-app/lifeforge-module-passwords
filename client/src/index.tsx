@@ -8,6 +8,10 @@ import ContentContainer from './components/ContentContainer'
 
 export type PasswordEntry = InferOutput<typeof forgeAPI.entries.list>[number]
 
+export type PasswordCategory = InferOutput<
+  typeof forgeAPI.categories.list
+>[number]
+
 function Passwords() {
   const { userData } = useAuth()
 

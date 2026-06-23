@@ -1,5 +1,6 @@
+import type { PasswordEntry } from '@'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import copy from 'copy-to-clipboard'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
@@ -9,14 +10,13 @@ import {
   ColorField,
   FormModal,
   IconField,
+  ListboxField,
   TextField,
   createDefaultValues,
   toast
 } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
-
-import type { PasswordEntry } from '..'
 
 const schema = z.object({
   icon: z.string().min(1, 'Required'),
@@ -27,6 +27,7 @@ const schema = z.object({
   username: z.string().optional().default('').catch(''),
   password: z.string().min(1, 'Required'),
   name: z.string().min(1, 'Required'),
+  category: z.string().optional(),
   master: z.string().optional().catch('')
 })
 
@@ -44,6 +45,7 @@ function ModifyPasswordModal({
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
+  const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
 
   const mutation = useMutation(
     (type === 'create'
@@ -54,7 +56,10 @@ function ModifyPasswordModal({
     ).mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ['passwords', 'entries']
+          queryKey: forgeAPI.entries.list.key
+        })
+        queryClient.invalidateQueries({
+          queryKey: forgeAPI.categories.list.key
         })
       },
       onError: () => {
@@ -72,10 +77,18 @@ function ModifyPasswordModal({
       website: initialData?.website || '',
       username: initialData?.username || '',
       password: initialData?.decrypted || '',
+      category: initialData?.category || '',
       master: ''
     },
     resolver: zodResolver(schema)
   })
+
+  const categoryOptions = (categoriesQuery.data || []).map(category => ({
+    text: category.name,
+    color: category.color,
+    icon: category.icon,
+    value: category.id
+  }))
 
   return (
     <FormModal
@@ -92,6 +105,7 @@ function ModifyPasswordModal({
           await mutation.mutateAsync({
             ...data,
             username: data.username || '',
+            category: data.category ?? '',
             password: encryptedPassword,
             master: encryptedMaster
           })
@@ -99,6 +113,7 @@ function ModifyPasswordModal({
       }}
       uiConfig={{
         icon: type === 'create' ? 'tabler:plus' : 'tabler:pencil',
+        loading: categoriesQuery.isLoading,
         namespace: 'apps.passwords',
         title: `password.${type}`,
         onClose
@@ -108,34 +123,34 @@ function ModifyPasswordModal({
         required
         control={form.control}
         icon="tabler:lock"
-        label="serviceName"
+        label="password.serviceName"
         name="name"
         placeholder="My Service"
       />
       <IconField
         required
         control={form.control}
-        label="serviceIcon"
+        label="password.serviceIcon"
         name="icon"
       />
       <ColorField
         required
         control={form.control}
-        label="serviceColor"
+        label="password.serviceColor"
         name="color"
       />
       <TextField
         required
         control={form.control}
         icon="tabler:link"
-        label="website"
+        label="password.website"
         name="website"
         placeholder="https://example.com"
       />
       <TextField
         control={form.control}
         icon="tabler:user"
-        label="usernameOrEmail"
+        label="password.usernameOrEmail"
         name="username"
         placeholder="johndoe1234"
       />
@@ -176,9 +191,16 @@ function ModifyPasswordModal({
         }}
         control={form.control}
         icon="tabler:key"
-        label="password"
+        label="password.password"
         name="password"
         placeholder="Your password"
+      />
+      <ListboxField
+        control={form.control}
+        icon="tabler:category"
+        label="password.category"
+        name="category"
+        options={categoryOptions}
       />
     </FormModal>
   )

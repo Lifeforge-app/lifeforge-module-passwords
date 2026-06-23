@@ -1,10 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useModuleTranslation } from '@lifeforge/localization'
 import {
+  ContentWrapperWithSidebar,
   EmptyStateScreen,
   FAB,
+  LayoutWithSidebar,
+  Scrollbar,
   Stack,
   WithQuery,
   toast,
@@ -14,15 +17,17 @@ import {
 import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
-import ModifyPasswordModal from '../modals/ModifyPasswordModal'
+import useFilter from '../hooks/useFilter'
 import ContentHeader from './ContentHeader'
 import PasswordEntryItem from './PasswordEntryItem'
+import Sidebar from './Sidebar'
+import ModifyPasswordModal from './modals/ModifyPasswordModal'
 
 function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const { t } = useModuleTranslation()
   const queryClient = useQueryClient()
   const { open } = useModalStore()
-  const [query, setQuery] = useState('')
+  const { filter, searchQuery, setSearchQuery } = useFilter()
 
   const passwordListQuery = useQuery(
     forgeAPI.entries.list.queryOptions({
@@ -35,14 +40,24 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
 
     if (!passwordList) return []
 
-    if (query === '') return passwordList
+    let filtered = passwordList
 
-    return passwordList.filter(
-      password =>
-        password.name.toLowerCase().includes(query.toLowerCase()) ||
-        password.website.toLowerCase().includes(query.toLowerCase())
-    )
-  }, [query, passwordListQuery.data])
+    if (searchQuery !== '') {
+      filtered = filtered.filter(
+        password =>
+          password.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          password.website.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    if (filter.category) {
+      filtered = filtered.filter(
+        password => password.category === filter.category
+      )
+    }
+
+    return filtered
+  }, [searchQuery, filter.category, passwordListQuery.data])
 
   async function pinPassword(id: string) {
     const mapPasswords = (p: PasswordEntry) =>
@@ -59,7 +74,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       await forgeAPI.entries.togglePin.input({ id }).mutate(undefined)
 
       queryClient.setQueryData<PasswordEntry[]>(
-        ['passwords', 'entries'],
+        forgeAPI.entries.list.key,
         prev => {
           if (!prev) return prev
 
@@ -68,7 +83,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       )
     } catch {
       toast.error(t('error.pin'))
-      queryClient.invalidateQueries({ queryKey: ['passwords', 'entries'] })
+      queryClient.invalidateQueries({ queryKey: forgeAPI.entries.list.key })
     }
   }
 
@@ -84,33 +99,40 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
       <ContentHeader
         handleCreatePassword={handleCreatePassword}
         masterPassword={masterPassword}
-        query={query}
-        setQuery={setQuery}
+        query={searchQuery}
+        setQuery={setSearchQuery}
       />
-      <WithQuery query={passwordListQuery}>
-        {() =>
-          filteredPasswordList.length === 0 ? (
-            <EmptyStateScreen
-              icon="tabler:key-off"
-              message={{
-                id: passwordListQuery.data?.length ? 'search' : 'passwords'
-              }}
-            />
-          ) : (
-            <Stack gap="sm" mb="xl" mt="md" width="100%">
-              {filteredPasswordList.map(password => (
-                <PasswordEntryItem
-                  key={password.id}
-                  masterPassword={masterPassword}
-                  password={password}
-                  pinPassword={pinPassword}
+      <LayoutWithSidebar>
+        <Sidebar />
+        <ContentWrapperWithSidebar>
+          <WithQuery query={passwordListQuery}>
+            {() =>
+              filteredPasswordList.length === 0 ? (
+                <EmptyStateScreen
+                  icon="tabler:key-off"
+                  message={{
+                    id: passwordListQuery.data?.length ? 'search' : 'passwords'
+                  }}
                 />
-              ))}
-            </Stack>
-          )
-        }
-      </WithQuery>
-      <FAB visibilityBreakpoint="lg" onClick={handleCreatePassword} />
+              ) : (
+                <Scrollbar>
+                  <Stack gap="sm" mb="xl" p="sm">
+                    {filteredPasswordList.map(password => (
+                      <PasswordEntryItem
+                        key={password.id}
+                        masterPassword={masterPassword}
+                        password={password}
+                        pinPassword={pinPassword}
+                      />
+                    ))}
+                  </Stack>
+                </Scrollbar>
+              )
+            }
+          </WithQuery>
+        </ContentWrapperWithSidebar>
+        <FAB visibilityBreakpoint="lg" onClick={handleCreatePassword} />
+      </LayoutWithSidebar>
     </>
   )
 }

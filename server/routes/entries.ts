@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { v4 } from 'uuid'
 import z from 'zod'
 
@@ -25,16 +26,21 @@ export const list = forge
     description: 'Get all password entries with sorting',
     output: {
       OK: z.array(
-        passwordsSchemas.entries.pick({
-          id: true,
-          name: true,
-          icon: true,
-          color: true,
-          website: true,
-          username: true,
-          pinned: true,
-          updated: true
-        })
+        passwordsSchemas.entries
+          .pick({
+            id: true,
+            name: true,
+            icon: true,
+            color: true,
+            website: true,
+            username: true,
+            pinned: true,
+            last_password_updated: true,
+            category: true
+          })
+          .extend({
+            password: z.string().optional()
+          })
       )
     }
   })
@@ -50,8 +56,9 @@ export const list = forge
           color: true,
           website: true,
           username: true,
+          category: true,
           pinned: true,
-          updated: true
+          last_password_updated: true
         })
         .execute()
     )
@@ -65,7 +72,11 @@ export const create = forge
         .omit({
           pinned: true,
           created: true,
-          updated: true
+          updated: true,
+          last_password_updated: true,
+          collectionId: true,
+          id: true,
+          collectionName: true
         })
         .extend({
           master: z.string()
@@ -123,7 +134,11 @@ export const update = forge
         .omit({
           pinned: true,
           created: true,
-          updated: true
+          updated: true,
+          collectionId: true,
+          last_password_updated: true,
+          id: true,
+          collectionName: true
         })
         .extend({
           master: z.string()
@@ -163,12 +178,29 @@ export const update = forge
         decryptedMaster
       )
 
+      const { password: originalPassword } = await pb.getOne
+        .collection('entries')
+        .id(id)
+        .fields({
+          password: true
+        })
+        .execute()
+
+      const decryptedOriginalPassword = _decrypt(
+        Buffer.from(originalPassword, 'base64'),
+        decryptedMaster
+      ).toString()
+
       await pb.update
         .collection('entries')
         .id(id)
         .data({
           ...rest,
-          password: encryptedPassword.toString('base64')
+          password: encryptedPassword.toString('base64'),
+          last_password_updated:
+            decryptedOriginalPassword !== decryptedPassword
+              ? dayjs().toDate()
+              : undefined
         })
         .execute()
 

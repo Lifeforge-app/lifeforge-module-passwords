@@ -246,6 +246,9 @@ export const contract = {
               "category": {
                 "type": "string"
               },
+              "last_password_updated": {
+                "type": "string"
+              },
               "created": {
                 "type": "string"
               },
@@ -271,6 +274,7 @@ export const contract = {
               "color",
               "pinned",
               "category",
+              "last_password_updated",
               "created",
               "updated",
               "id",
@@ -333,7 +337,10 @@ export const contract = {
               "pinned": {
                 "type": "boolean"
               },
-              "updated": {
+              "last_password_updated": {
+                "type": "string"
+              },
+              "category": {
                 "type": "string"
               },
               "password": {
@@ -348,7 +355,8 @@ export const contract = {
               "website",
               "username",
               "pinned",
-              "updated"
+              "last_password_updated",
+              "category"
             ],
             "additionalProperties": false
           }
@@ -474,6 +482,237 @@ export const contract = {
       },
       "output": {
         "NO_CONTENT": true,
+        "NOT_FOUND": true
+      }
+    }
+  },
+  "categories": {
+    "create": {
+      "method": "post",
+      "description": "Create a new password category",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {
+        "body": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "icon": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "icon",
+            "color"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output": {
+        "CREATED": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string"
+            },
+            "icon": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "collectionId": {
+              "type": "string"
+            },
+            "collectionName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "color",
+            "icon",
+            "id",
+            "collectionId",
+            "collectionName"
+          ],
+          "additionalProperties": false
+        },
+        "CONFLICT": true
+      }
+    },
+    "list": {
+      "method": "get",
+      "description": "Get the list of password categories",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {},
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "color": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "id": {
+                "type": "string"
+              },
+              "collectionId": {
+                "type": "string"
+              },
+              "collectionName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "color",
+              "icon",
+              "amount",
+              "id",
+              "collectionId",
+              "collectionName"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "remove": {
+      "method": "post",
+      "description": "Delete a password category",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {
+        "query": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "boolean"
+        },
+        "NOT_FOUND": true
+      }
+    },
+    "update": {
+      "method": "post",
+      "description": "Update an existing password category",
+      "noAuth": false,
+      "encrypted": true,
+      "isDownloadable": false,
+      "media": null,
+      "input": {
+        "query": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "body": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "icon": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "icon",
+            "color"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output": {
+        "OK": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string"
+            },
+            "icon": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "collectionId": {
+              "type": "string"
+            },
+            "collectionName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "color",
+            "icon",
+            "id",
+            "collectionId",
+            "collectionName"
+          ],
+          "additionalProperties": false
+        },
+        "CONFLICT": true,
         "NOT_FOUND": true
       }
     }
