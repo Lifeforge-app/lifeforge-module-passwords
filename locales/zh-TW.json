@@ -53,7 +53,8 @@
   "sidebar": {
     "all": "全部密碼",
     "categories": "分類",
-    "allCategories": "全部分類"
+    "allCategories": "全部分類",
+    "filtered": "篩選後的密碼"
   },
   "empty": {
     "categories": {

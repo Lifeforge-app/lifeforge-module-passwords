@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react'
 
 import { useModuleTranslation } from '@lifeforge/localization'
 import {
+  Box,
   ContentWrapperWithSidebar,
   EmptyStateScreen,
   FAB,
@@ -19,7 +20,8 @@ import { forgeAPI } from '@/manifest'
 import type { PasswordEntry } from '..'
 import useFilter from '../hooks/useFilter'
 import { useVEKContext } from '../providers/VEKProvider'
-import ContentHeader from './ContentHeader'
+import InnerHeader from './InnerHeader'
+import MainHeader from './MainHeader'
 import PasswordEntryItem from './PasswordEntryItem'
 import Sidebar from './Sidebar'
 import ModifyPasswordModal from './modals/ModifyPasswordModal'
@@ -28,7 +30,7 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const { t } = useModuleTranslation()
   const queryClient = useQueryClient()
   const { open } = useModalStore()
-  const { filter, searchQuery, setSearchQuery } = useFilter()
+  const { filter, searchQuery } = useFilter()
   const vek = useVEKContext()
 
   const passwordListQuery = useQuery(
@@ -100,15 +102,11 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
 
   return (
     <>
-      <ContentHeader
-        handleCreatePassword={handleCreatePassword}
-        masterPassword={masterPassword}
-        query={searchQuery}
-        setQuery={setSearchQuery}
-      />
+      <MainHeader />
       <LayoutWithSidebar>
         <Sidebar />
         <ContentWrapperWithSidebar>
+          <InnerHeader totalItemsCount={filteredPasswordList.length} />
           <WithQuery query={passwordListQuery}>
             {() =>
               filteredPasswordList.length === 0 ? (
@@ -119,17 +117,19 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
                   }}
                 />
               ) : (
-                <Scrollbar>
-                  <Stack gap="sm" mb="xl" p="sm">
-                    {filteredPasswordList.map(password => (
-                      <PasswordEntryItem
-                        key={password.id}
-                        password={password}
-                        pinPassword={pinPassword}
-                      />
-                    ))}
-                  </Stack>
-                </Scrollbar>
+                <Box asChild mt="lg">
+                  <Scrollbar>
+                    <Stack gap="sm" mb="xl" p="sm">
+                      {filteredPasswordList.map(password => (
+                        <PasswordEntryItem
+                          key={password.id}
+                          password={password}
+                          pinPassword={pinPassword}
+                        />
+                      ))}
+                    </Stack>
+                  </Scrollbar>
+                </Box>
               )
             }
           </WithQuery>

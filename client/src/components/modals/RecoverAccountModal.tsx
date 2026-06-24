@@ -50,7 +50,7 @@ function RecoverAccountModal({ onClose }: { onClose: () => void }) {
     <FormModal
       form={form}
       submissionConfig={{
-        label: 'Recover',
+        label: 'Recover Account',
         icon: 'tabler:key',
         handler: async data => {
           const challenge = await forgeAPI.master.getChallenge.query()

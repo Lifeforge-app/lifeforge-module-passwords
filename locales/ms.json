@@ -53,7 +53,8 @@
   "sidebar": {
     "all": "Semua Kata Laluan",
     "categories": "Kategori",
-    "allCategories": "Semua Kategori"
+    "allCategories": "Semua Kategori",
+    "filtered": "Kata Laluan Ditapis"
   },
   "empty": {
     "categories": {

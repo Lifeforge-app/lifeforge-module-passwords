@@ -53,7 +53,8 @@
   "sidebar": {
     "all": "全部密码",
     "categories": "分类",
-    "allCategories": "全部分类"
+    "allCategories": "全部分类",
+    "filtered": "筛选后的密码"
   },
   "empty": {
     "categories": {

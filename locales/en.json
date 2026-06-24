@@ -53,7 +53,8 @@
   "sidebar": {
     "all": "All Passwords",
     "categories": "Categories",
-    "allCategories": "All Categories"
+    "allCategories": "All Categories",
+    "filtered": "Filtered Passwords"
   },
   "empty": {
     "categories": {
