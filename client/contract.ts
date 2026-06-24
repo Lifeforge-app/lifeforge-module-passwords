@@ -92,7 +92,7 @@ export const contract = {
         }
       }
     },
-    "masterChallenge": "b888e032-731d-49a0-b994-22923bb777c4",
+    "masterChallenge": "5f19ccb9-485d-46ee-8c3d-d91abe2eab41",
     "updateWrappedVEK": {
       "method": "post",
       "description": "Update the wrapped VEK (used during master password rotation)",

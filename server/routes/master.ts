@@ -7,6 +7,14 @@ import forge from '../forge'
 import schema from '../schema'
 import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
 import { generateAndWrapRecoveryVEK } from '../utils/recoveryHelper'
+import {
+  decryptVEKWithKey,
+  deriveWrappingKey,
+  encryptVEKWithKey,
+  generateVEKSalt,
+  packWrappedVEK,
+  unpackWrappedVEK
+} from '../utils/vekDerivation'
 
 let challenge = randomUUID()
 
@@ -69,25 +77,12 @@ export const create = forge
 
       const master_hash = await hash(decryptedMaster)
 
-      const derivedKey = crypto
-        .createHash('sha256')
-        .update(decryptedMaster)
-        .digest('base64')
-        .slice(0, 32)
+      const saltBase64 = generateVEKSalt()
+      const derivedKey = await deriveWrappingKey(decryptedMaster, saltBase64)
 
       const vek = crypto.randomBytes(32)
-      const iv = crypto.randomBytes(12)
-      const cipher = crypto.createCipheriv(
-        'aes-256-gcm',
-        Buffer.from(derivedKey, 'utf-8'),
-        iv
-      )
-
-      const encryptedVEK = Buffer.concat([cipher.update(vek), cipher.final()])
-      const tag = cipher.getAuthTag()
-      const wrapped_vek = Buffer.concat([iv, encryptedVEK, tag]).toString(
-        'base64'
-      )
+      const encryptedData = encryptVEKWithKey(vek, derivedKey)
+      const wrapped_vek = packWrappedVEK(saltBase64, encryptedData)
 
       const { recovery_key, recovery_wrapped_vek } =
         generateAndWrapRecoveryVEK(vek)
@@ -216,26 +211,12 @@ export const updateWrappedVEK = forge
 
       const new_master_hash = await hash(decryptedNewMaster)
 
-      const oldDerivedKey = crypto
-        .createHash('sha256')
-        .update(decryptedMaster)
-        .digest('base64')
-        .slice(0, 32)
+      const { saltBase64: oldSalt, encryptedDataBase64: oldEncryptedData } =
+        unpackWrappedVEK(config.wrapped_vek)
 
-      const oldWrappedData = Buffer.from(config.wrapped_vek, 'base64')
-      const oldIV = oldWrappedData.subarray(0, 12)
-      const oldCiphertext = oldWrappedData.subarray(12)
-      const oldDecipher = crypto.createDecipheriv(
-        'aes-256-gcm',
-        Buffer.from(oldDerivedKey, 'utf-8'),
-        oldIV
-      )
+      const oldDerivedKey = await deriveWrappingKey(decryptedMaster, oldSalt)
 
-      oldDecipher.setAuthTag(oldCiphertext.subarray(-16))
-      const vek = Buffer.concat([
-        oldDecipher.update(oldCiphertext.subarray(0, -16)),
-        oldDecipher.final()
-      ])
+      const vek = decryptVEKWithKey(oldEncryptedData, oldDerivedKey)
 
       const { recovery_key, recovery_wrapped_vek } =
         generateAndWrapRecoveryVEK(vek)

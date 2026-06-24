@@ -6,6 +6,14 @@ import type { IPBService } from '@lifeforge/server-utils'
 import forge from '../forge'
 import schema from '../schema'
 import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
+import {
+  generateVEKSalt,
+  deriveWrappingKey,
+  packWrappedVEK,
+  unpackWrappedVEK,
+  encryptVEKWithKey,
+  decryptVEKWithKey
+} from '../utils/vekDerivation'
 import { masterChallenge as challenge } from './master'
 
 async function getConfigRecord(pb: IPBService<typeof schema>) {
@@ -55,26 +63,16 @@ export const generate = forge
         return response.unauthorized()
       }
 
-      const derivedKey = crypto
-        .createHash('sha256')
-        .update(decryptedMaster)
-        .digest('base64')
-        .slice(0, 32)
-
-      const wrappedVEKData = Buffer.from(config.wrapped_vek, 'base64')
-      const wrappedIV = wrappedVEKData.subarray(0, 12)
-      const wrappedCiphertext = wrappedVEKData.subarray(12)
-      const decipher = crypto.createDecipheriv(
-        'aes-256-gcm',
-        Buffer.from(derivedKey, 'utf-8'),
-        wrappedIV
+      const { saltBase64, encryptedDataBase64 } = unpackWrappedVEK(
+        config.wrapped_vek
       )
 
-      decipher.setAuthTag(wrappedCiphertext.subarray(-16))
-      const vek = Buffer.concat([
-        decipher.update(wrappedCiphertext.subarray(0, -16)),
-        decipher.final()
-      ])
+      const derivedKey = await deriveWrappingKey(
+        decryptedMaster,
+        saltBase64
+      )
+
+      const vek = decryptVEKWithKey(encryptedDataBase64, derivedKey)
 
       const recoveryKey = crypto.randomBytes(32)
       const recoveryKeyHex = recoveryKey.toString('hex')
@@ -189,30 +187,14 @@ export const recover = forge
 
       const newMasterHash = await hash(decryptedNewPassword)
 
-      const newDerivedKey = crypto
-        .createHash('sha256')
-        .update(decryptedNewPassword)
-        .digest('base64')
-        .slice(0, 32)
-
-      const newIV = crypto.randomBytes(12)
-      const newCipher = crypto.createCipheriv(
-        'aes-256-gcm',
-        Buffer.from(newDerivedKey, 'utf-8'),
-        newIV
+      const newSaltBase64 = generateVEKSalt()
+      const newDerivedKey = await deriveWrappingKey(
+        decryptedNewPassword,
+        newSaltBase64
       )
 
-      const newEncrypted = Buffer.concat([
-        newCipher.update(vek),
-        newCipher.final()
-      ])
-
-      const newTag = newCipher.getAuthTag()
-      const newWrappedVEK = Buffer.concat([
-        newIV,
-        newEncrypted,
-        newTag
-      ]).toString('base64')
+      const newEncryptedData = encryptVEKWithKey(vek, newDerivedKey)
+      const newWrappedVEK = packWrappedVEK(newSaltBase64, newEncryptedData)
 
       await pb.update
         .collection('config')

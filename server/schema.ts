@@ -343,7 +343,8 @@ export const schemas = {
     schema: z.object({
       master_hash: z.string(),
       wrapped_vek: z.string(),
-      recovery_wrapped_vek: z.string()
+      recovery_wrapped_vek: z.string(),
+      pin_hash: z.string()
     }),
     raw: {
       listRule: '@request.auth.id != ""',
@@ -399,6 +400,19 @@ export const schemas = {
           max: 0,
           min: 0,
           name: 'recovery_wrapped_vek',
+          pattern: '',
+          presentable: false,
+          primaryKey: false,
+          required: true,
+          system: false,
+          type: 'text'
+        },
+        {
+          autogeneratePattern: '',
+          hidden: false,
+          max: 0,
+          min: 0,
+          name: 'pin_hash',
           pattern: '',
           presentable: false,
           primaryKey: false,
