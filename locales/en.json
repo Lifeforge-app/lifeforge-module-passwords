@@ -27,7 +27,8 @@
       "password": "Password",
       "usernameOrEmail": "Username or Email",
       "serviceIcon": "Service Icon",
-      "category": "Password Category"
+      "category": "Password Category",
+      "rotationInterval": "Password Rotation Interval (Days)"
     },
     "category": {
       "name": "Category Name",

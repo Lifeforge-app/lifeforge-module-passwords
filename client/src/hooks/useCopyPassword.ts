@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react'
 import copy from 'copy-to-clipboard'
 
-import { toast } from '@lifeforge/ui'
 import { useModuleTranslation } from '@lifeforge/localization'
+import { toast } from '@lifeforge/ui'
 
+import { useVEKContext } from '@/providers/VEKProvider'
 import { decrypt } from '@/utils/crypto'
 
-export default function useCopyPassword(vek: CryptoKey | null) {
+export default function useCopyPassword() {
+  const vek = useVEKContext()
   const { t } = useModuleTranslation()
   const [copyLoading, setCopyLoading] = useState(false)
 
@@ -25,7 +27,7 @@ export default function useCopyPassword(vek: CryptoKey | null) {
 
       setCopyLoading(false)
     },
-    [vek]
+    [vek, t]
   )
 
   return { copyPassword, copyLoading }

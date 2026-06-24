@@ -2,10 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import copy from 'copy-to-clipboard'
 import { useCallback, useState } from 'react'
 
-import { ConfirmationModal, toast, useModalStore } from '@lifeforge/ui'
 import { useModuleTranslation } from '@lifeforge/localization'
+import { ConfirmationModal, toast, useModalStore } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
+import { useVEKContext } from '@/providers/VEKProvider'
 import { encrypt } from '@/utils/crypto'
 
 import type { PasswordEntry } from '..'
@@ -29,10 +30,10 @@ function generatePassword(): string {
 }
 
 export default function useRotatePassword(
-  vek: CryptoKey | null,
   password: PasswordEntry,
   setDecryptedPassword: (val: string) => void
 ) {
+  const vek = useVEKContext()
   const queryClient = useQueryClient()
   const { open } = useModalStore()
   const { t } = useModuleTranslation()
@@ -61,7 +62,7 @@ export default function useRotatePassword(
     setRotateLoading(false)
     queryClient.invalidateQueries({ queryKey: forgeAPI.entries.list.key })
     setDecryptedPassword(generatedPassword)
-  }, [vek, password, rotateMutation, queryClient, setDecryptedPassword])
+  }, [vek, password, rotateMutation, queryClient, setDecryptedPassword, t])
 
   const rotatePassword = useCallback(() => {
     open(ConfirmationModal, {

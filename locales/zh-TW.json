@@ -27,7 +27,8 @@
       "password": "密碼",
       "usernameOrEmail": "用戶名或電子郵件",
       "serviceIcon": "服務圖標",
-      "category": "分類"
+      "category": "分類",
+      "rotationInterval": "密碼更換間隔（天）"
     },
     "category": {
       "name": "分類名稱",

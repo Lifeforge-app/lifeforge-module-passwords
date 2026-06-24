@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import z from 'zod'
 
 import forge from '../forge'
@@ -7,20 +8,7 @@ export const list = forge
   .query({
     description: 'Get all password entries with sorting',
     output: {
-      OK: z.array(
-        passwordsSchemas.entries.pick({
-          id: true,
-          name: true,
-          icon: true,
-          color: true,
-          website: true,
-          username: true,
-          password: true,
-          pinned: true,
-          last_password_updated: true,
-          category: true
-        })
-      )
+      OK: z.array(passwordsSchemas.entries)
     }
   })
   .callback(async ({ pb, response }) =>
@@ -28,18 +16,6 @@ export const list = forge
       await pb.getFullList
         .collection('entries')
         .sort(['-pinned', 'name'])
-        .fields({
-          id: true,
-          name: true,
-          icon: true,
-          color: true,
-          website: true,
-          username: true,
-          password: true,
-          category: true,
-          pinned: true,
-          last_password_updated: true
-        })
         .execute()
     )
   )
@@ -63,7 +39,10 @@ export const create = forge
     }
   })
   .callback(async ({ pb, body, response }) => {
-    await pb.create.collection('entries').data(body).execute()
+    await pb.create
+      .collection('entries')
+      .data({ ...body, last_password_updated: dayjs().toDate() })
+      .execute()
 
     return response.noContent()
   })

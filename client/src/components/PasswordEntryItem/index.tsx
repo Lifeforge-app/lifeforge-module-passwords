@@ -1,21 +1,25 @@
 import type { PasswordEntry } from '@'
 
-import { useModuleTranslation } from '@lifeforge/localization'
+import { usePromiseLoading } from '@lifeforge/api'
 import { Box, Card, Flex, Icon } from '@lifeforge/ui'
 
+import { useDecryptPassword } from '@/hooks'
+
+import DecryptedPasswordDisplay from './components/DecryptedPasswordDisplay'
 import PasswordActions from './components/PasswordActions'
 import PasswordInfo from './components/PasswordInfo'
 
 function PasswordEntryItem({
   password,
-  pinPassword,
-  vek
+  pinPassword
 }: {
   password: PasswordEntry
   pinPassword: (id: string) => Promise<void>
-  vek: CryptoKey | null
 }) {
-  const { t } = useModuleTranslation()
+  const { decryptedPassword, toggleDecrypt, setDecryptedPassword } =
+    useDecryptPassword(password.password)
+
+  const [decryptLoading, onDecrypt] = usePromiseLoading(toggleDecrypt)
 
   return (
     <Card>
@@ -30,15 +34,36 @@ function PasswordEntryItem({
           <Icon color="custom-500" icon="tabler:pin-filled" size="1.5em" />
         </Box>
       )}
-      <Flex align="center" gap="sm" width="100%">
+      <Flex align="center" flex="1" gap="sm">
         <PasswordInfo password={password} />
-        <PasswordActions
-          password={password}
-          pinPassword={pinPassword}
-          t={t}
-          vek={vek}
-        />
+        <Flex align="center" flexShrink="0" gap="xs" pt="sm">
+          <DecryptedPasswordDisplay
+            decryptedPassword={decryptedPassword}
+            password={password}
+          />
+          <PasswordActions
+            decryptedPassword={decryptedPassword}
+            decryptLoading={decryptLoading}
+            password={password}
+            pinPassword={pinPassword}
+            setDecryptedPassword={setDecryptedPassword}
+            onDecrypt={onDecrypt}
+          />
+        </Flex>
       </Flex>
+      {decryptedPassword !== null && (
+        <Box
+          as="code"
+          bg="bg-800"
+          display={{ base: 'block', lg: 'none' }}
+          mt="md"
+          p="md"
+          r="md"
+          style={{ wordBreak: 'break-all' }}
+        >
+          {decryptedPassword}
+        </Box>
+      )}
     </Card>
   )
 }

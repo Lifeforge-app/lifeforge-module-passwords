@@ -92,7 +92,7 @@ export const contract = {
         }
       }
     },
-    "masterChallenge": "c797fe36-f11c-47b2-9241-ae3e3cbb4da7",
+    "masterChallenge": "2cf1965d-7b6e-4bd5-bd05-042c4776b0fb",
     "updateWrappedVEK": {
       "method": "post",
       "description": "Update the wrapped VEK (used during master password rotation)",
@@ -236,6 +236,9 @@ export const contract = {
             },
             "category": {
               "type": "string"
+            },
+            "rotation_interval": {
+              "type": "number"
             }
           },
           "required": [
@@ -245,7 +248,8 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "category"
+            "category",
+            "rotation_interval"
           ],
           "additionalProperties": false
         }
@@ -269,16 +273,7 @@ export const contract = {
           "items": {
             "type": "object",
             "properties": {
-              "id": {
-                "type": "string"
-              },
               "name": {
-                "type": "string"
-              },
-              "icon": {
-                "type": "string"
-              },
-              "color": {
                 "type": "string"
               },
               "website": {
@@ -290,27 +285,56 @@ export const contract = {
               "password": {
                 "type": "string"
               },
+              "icon": {
+                "type": "string"
+              },
+              "color": {
+                "type": "string"
+              },
               "pinned": {
                 "type": "boolean"
+              },
+              "category": {
+                "type": "string"
               },
               "last_password_updated": {
                 "type": "string"
               },
-              "category": {
+              "rotation_interval": {
+                "type": "number"
+              },
+              "created": {
+                "type": "string"
+              },
+              "updated": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "collectionId": {
+                "type": "string"
+              },
+              "collectionName": {
                 "type": "string"
               }
             },
             "required": [
-              "id",
               "name",
-              "icon",
-              "color",
               "website",
               "username",
               "password",
+              "icon",
+              "color",
               "pinned",
+              "category",
               "last_password_updated",
-              "category"
+              "rotation_interval",
+              "created",
+              "updated",
+              "id",
+              "collectionId",
+              "collectionName"
             ],
             "additionalProperties": false
           }
@@ -417,6 +441,9 @@ export const contract = {
             "category": {
               "type": "string"
             },
+            "rotation_interval": {
+              "type": "number"
+            },
             "password_changed": {
               "type": "boolean"
             }
@@ -428,7 +455,8 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "category"
+            "category",
+            "rotation_interval"
           ],
           "additionalProperties": false
         }

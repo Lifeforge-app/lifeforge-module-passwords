@@ -13,6 +13,7 @@ export const schemas = {
       pinned: z.boolean(),
       category: z.string(),
       last_password_updated: z.string(),
+      rotation_interval: z.number(),
       created: z.string(),
       updated: z.string()
     }),
@@ -145,6 +146,17 @@ export const schemas = {
           required: false,
           system: false,
           type: 'date'
+        },
+        {
+          hidden: false,
+          max: null,
+          min: null,
+          name: 'rotation_interval',
+          onlyInt: false,
+          presentable: false,
+          required: false,
+          system: false,
+          type: 'number'
         },
         {
           hidden: false,

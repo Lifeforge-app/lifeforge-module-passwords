@@ -27,7 +27,8 @@
       "password": "密码",
       "usernameOrEmail": "用户名或电子邮件",
       "serviceIcon": "服务图标",
-      "category": "分类"
+      "category": "分类",
+      "rotationInterval": "密码更换间隔（天）"
     },
     "category": {
       "name": "分类名称",

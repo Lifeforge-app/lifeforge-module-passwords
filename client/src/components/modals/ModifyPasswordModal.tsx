@@ -11,6 +11,7 @@ import {
   FormModal,
   IconField,
   ListboxField,
+  NumberField,
   TextField,
   createDefaultValues,
   toast
@@ -28,7 +29,8 @@ const schema = z.object({
   username: z.string().optional().default('').catch(''),
   password: z.string().min(1, 'Required'),
   name: z.string().min(1, 'Required'),
-  category: z.string().optional()
+  category: z.string().optional(),
+  rotation_interval: z.number().min(-1)
 })
 
 function ModifyPasswordModal({
@@ -78,7 +80,8 @@ function ModifyPasswordModal({
       website: initialData?.website || '',
       username: initialData?.username || '',
       password: initialData?.decrypted || '',
-      category: initialData?.category || ''
+      category: initialData?.category || '',
+      rotation_interval: initialData?.rotation_interval ?? 90
     },
     resolver: zodResolver(schema)
   })
@@ -96,9 +99,12 @@ function ModifyPasswordModal({
       submissionConfig={{
         template: type,
         handler: async data => {
+          if (!vek) return
+
           const encryptedPassword = await encrypt(data.password, vek)
           const passwordChanged =
-            type === 'update' && data.password !== (initialData?.decrypted || '')
+            type === 'update' &&
+            data.password !== (initialData?.decrypted || '')
 
           await mutation.mutateAsync({
             ...data,
@@ -136,6 +142,13 @@ function ModifyPasswordModal({
         control={form.control}
         label="password.serviceColor"
         name="color"
+      />
+      <ListboxField
+        control={form.control}
+        icon="tabler:category"
+        label="password.category"
+        name="category"
+        options={categoryOptions}
       />
       <TextField
         required
@@ -193,12 +206,12 @@ function ModifyPasswordModal({
         name="password"
         placeholder="Your password"
       />
-      <ListboxField
+      <NumberField
+        required
         control={form.control}
-        icon="tabler:category"
-        label="password.category"
-        name="category"
-        options={categoryOptions}
+        icon="tabler:refresh"
+        label="password.rotationInterval"
+        name="rotation_interval"
       />
     </FormModal>
   )

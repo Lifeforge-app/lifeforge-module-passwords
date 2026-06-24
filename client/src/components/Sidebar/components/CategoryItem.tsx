@@ -73,6 +73,7 @@ function CategoryItem({ category }: { category: PasswordCategory }) {
       }
       icon={category.icon}
       label={category.name}
+      namespace={false}
       number={category.amount}
       sideStripColor={category.color}
       onCancelButtonClick={() => {

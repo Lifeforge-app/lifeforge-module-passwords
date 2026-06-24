@@ -17,8 +17,8 @@ import {
 import { forgeAPI } from '@/manifest'
 
 import type { PasswordEntry } from '..'
-import { useVEK } from '../hooks'
 import useFilter from '../hooks/useFilter'
+import { useVEKContext } from '../providers/VEKProvider'
 import ContentHeader from './ContentHeader'
 import PasswordEntryItem from './PasswordEntryItem'
 import Sidebar from './Sidebar'
@@ -29,22 +29,12 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
   const queryClient = useQueryClient()
   const { open } = useModalStore()
   const { filter, searchQuery, setSearchQuery } = useFilter()
+  const vek = useVEKContext()
 
   const passwordListQuery = useQuery(
     forgeAPI.entries.list.queryOptions({
       enabled: masterPassword !== ''
     })
-  )
-
-  const wrappedVEKQuery = useQuery(
-    forgeAPI.master.getWrappedVEK.queryOptions({
-      enabled: masterPassword !== ''
-    })
-  )
-
-  const { vek } = useVEK(
-    masterPassword,
-    wrappedVEKQuery.data?.wrapped_vek || ''
   )
 
   const filteredPasswordList = useMemo(() => {
@@ -115,7 +105,6 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
         masterPassword={masterPassword}
         query={searchQuery}
         setQuery={setSearchQuery}
-        vek={vek}
       />
       <LayoutWithSidebar>
         <Sidebar />
@@ -137,7 +126,6 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
                         key={password.id}
                         password={password}
                         pinPassword={pinPassword}
-                        vek={vek}
                       />
                     ))}
                   </Stack>

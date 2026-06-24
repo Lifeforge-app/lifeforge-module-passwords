@@ -14,7 +14,7 @@ function PasswordInfo({ password }: { password: PasswordEntry }) {
   )
 
   return (
-    <Flex align="center" gap="md" minWidth="0" width="100%">
+    <Flex align="center" flex="1" gap="md" minWidth="0" width="100%">
       {categoryData && (
         <Flex
           centered
@@ -40,7 +40,7 @@ function PasswordInfo({ password }: { password: PasswordEntry }) {
           style={{ color: password.color }}
         />
       </Flex>
-      <Flex direction="column" flex="1" minWidth="0">
+      <Flex direction="column" minWidth="0" width="100%">
         <Flex align="center" gap="sm">
           <Text truncate size="xl" weight="semibold">
             {password.name}

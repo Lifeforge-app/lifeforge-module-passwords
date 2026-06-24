@@ -1,22 +1,27 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { toast } from '@lifeforge/ui'
 import { useModuleTranslation } from '@lifeforge/localization'
+import { toast } from '@lifeforge/ui'
 
+import { useVEKContext } from '@/providers/VEKProvider'
 import { decrypt } from '@/utils/crypto'
 
-export default function useDecryptPassword(
-  vek: CryptoKey | null,
-  encryptedPassword: string
-) {
+export default function useDecryptPassword(encryptedPassword: string) {
+  const vek = useVEKContext()
   const { t } = useModuleTranslation()
+
   const [decryptedPassword, setDecryptedPassword] = useState<string | null>(
     null
   )
 
+  useEffect(() => {
+    setDecryptedPassword(null)
+  }, [encryptedPassword])
+
   const toggleDecrypt = useCallback(async () => {
     if (decryptedPassword !== null) {
       setDecryptedPassword(null)
+
       return
     }
 
@@ -29,7 +34,7 @@ export default function useDecryptPassword(
       toast.error(t('toasts.decryptFailed'))
       setDecryptedPassword(null)
     }
-  }, [vek, encryptedPassword, decryptedPassword])
+  }, [vek, encryptedPassword, decryptedPassword, t])
 
   return { decryptedPassword, toggleDecrypt, setDecryptedPassword }
 }

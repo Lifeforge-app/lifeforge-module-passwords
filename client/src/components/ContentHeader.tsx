@@ -15,6 +15,7 @@ import {
 } from '@lifeforge/ui'
 
 import { forgeAPI } from '@/manifest'
+import { useVEKContext } from '@/providers/VEKProvider'
 import { decrypt } from '@/utils/crypto'
 
 import type { PasswordEntry } from '..'
@@ -25,14 +26,12 @@ function ContentHeader({
   masterPassword,
   query,
   setQuery,
-  handleCreatePassword,
-  vek
+  handleCreatePassword
 }: {
   masterPassword: string
   query: string
   setQuery: (val: string) => void
   handleCreatePassword: () => void
-  vek: CryptoKey | null
 }) {
   const { t } = useModuleTranslation()
   const queryClient = useQueryClient()
@@ -40,15 +39,15 @@ function ContentHeader({
   const { setIsSidebarOpen } = useModuleSidebarState()
   const categoriesQuery = useQuery(forgeAPI.categories.list.queryOptions())
   const { filter, updateFilter } = useFilter()
+  const vek = useVEKContext()
 
   const handleExport = useCallback(async () => {
     if (!vek) return
 
     try {
       const entries =
-        queryClient.getQueryData<PasswordEntry[]>(
-          forgeAPI.entries.list.key
-        ) || []
+        queryClient.getQueryData<PasswordEntry[]>(forgeAPI.entries.list.key) ||
+        []
 
       const decryptedEntries = await Promise.all(
         entries.map(async entry => ({
@@ -116,6 +115,9 @@ function ContentHeader({
           )
         }
         contextMenuProps={{
+          styles: {
+            menu: { minWidth: '18em' }
+          },
           children: (
             <>
               <ContextMenuItem
@@ -167,7 +169,7 @@ function ContentHeader({
         />
         <Button
           display={{ base: 'flex', lg: 'none' }}
-          icon="tabler:category"
+          icon="tabler:menu"
           variant="plain"
           onClick={() => {
             setIsSidebarOpen(true)

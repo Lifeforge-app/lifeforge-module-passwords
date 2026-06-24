@@ -6,6 +6,7 @@ import { forgeAPI } from '@/manifest'
 import ContentContainer from './components/ContentContainer'
 import RecoverAccountModal from './components/modals/RecoverAccountModal'
 import ShowRecoveryKeyModal from './components/modals/ShowRecoveryKeyModal'
+import { VEKProvider } from './providers/VEKProvider'
 
 export type PasswordEntry = InferOutput<typeof forgeAPI.entries.list>[number]
 
@@ -38,7 +39,9 @@ function Passwords() {
           }}
         >
           {masterPassword => (
-            <ContentContainer masterPassword={masterPassword} />
+            <VEKProvider masterPassword={masterPassword}>
+              <ContentContainer masterPassword={masterPassword} />
+            </VEKProvider>
           )}
         </WithMasterPassword>
       )}
