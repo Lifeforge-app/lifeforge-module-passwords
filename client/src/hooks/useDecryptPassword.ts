@@ -25,7 +25,11 @@ export default function useDecryptPassword(encryptedPassword: string) {
       return
     }
 
-    if (!vek) return
+    if (!vek) {
+      toast.error(t('toasts.decryptFailed'))
+
+      return
+    }
 
     try {
       const result = await decrypt(encryptedPassword, vek)
@@ -34,7 +38,7 @@ export default function useDecryptPassword(encryptedPassword: string) {
       toast.error(t('toasts.decryptFailed'))
       setDecryptedPassword(null)
     }
-  }, [vek, encryptedPassword, decryptedPassword, t])
+  }, [vek, encryptedPassword])
 
   return { decryptedPassword, toggleDecrypt, setDecryptedPassword }
 }
