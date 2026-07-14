@@ -18,7 +18,7 @@ function Passwords() {
   const { open } = useModalStore()
 
   return (
-    <WithQueryData controller={forgeAPI.master.hasMasterPassword}>
+    <WithQueryData contract={forgeAPI.master.hasMasterPassword}>
       {hasMasterPassword => (
         <WithMasterPassword
           controllers={{

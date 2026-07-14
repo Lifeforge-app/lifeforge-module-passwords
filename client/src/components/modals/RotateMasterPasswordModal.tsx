@@ -65,10 +65,7 @@ function RotateMasterPasswordModal({
         toast.success(t('toasts.masterPasswordRotated'))
         onClose()
 
-        setTimeout(
-          () => open(ShowRecoveryKeyModal, { recoveryKey: data.recovery_key }),
-          500
-        )
+        open(ShowRecoveryKeyModal, { recoveryKey: data.recovery_key })
       },
       onError: () => {
         toast.error(t('toasts.rotateFailed'))

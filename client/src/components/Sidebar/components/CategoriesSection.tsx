@@ -29,7 +29,7 @@ function CategoriesSection() {
         }}
         label="sidebar.categories"
       />
-      <WithQueryData controller={forgeAPI.categories.list}>
+      <WithQueryData contract={forgeAPI.categories.list}>
         {data =>
           data.length === 0 ? (
             <EmptyStateScreen
