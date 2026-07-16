@@ -1,6 +1,6 @@
 import z from 'zod'
 
-import { schemaWithPB } from '@lifeforge/server-utils'
+import { schemaWithPB } from '@lifeforge/pocketbase'
 
 import forge from '../forge'
 import passwordsSchemas from '../schema'

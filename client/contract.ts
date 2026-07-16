@@ -139,39 +139,6 @@ export const contract = {
         "UNAUTHORIZED": true
       }
     },
-    "validateOTP": {
-      "method": "post",
-      "description": "Validate OTP for master password operations",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "otp": {
-              "type": "string"
-            },
-            "otpId": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "otp",
-            "otpId"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "boolean"
-        }
-      }
-    },
     "verify": {
       "method": "post",
       "description": "Verify master password against stored hash",

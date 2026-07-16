@@ -1,20 +1,20 @@
 import crypto from 'node:crypto'
 import z from 'zod'
 
-import type { IPBService } from '@lifeforge/server-utils'
+import type { IPBService } from '@lifeforge/pocketbase'
 
 import forge from '../forge'
 import schema from '../schema'
+import { challenge } from '../utils/challenge'
 import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
 import {
-  generateVEKSalt,
+  decryptVEKWithKey,
   deriveWrappingKey,
-  packWrappedVEK,
-  unpackWrappedVEK,
   encryptVEKWithKey,
-  decryptVEKWithKey
+  generateVEKSalt,
+  packWrappedVEK,
+  unpackWrappedVEK
 } from '../utils/vekDerivation'
-import { masterChallenge as challenge } from './master'
 
 async function getConfigRecord(pb: IPBService<typeof schema>) {
   const records = await pb.getFullList.collection('config').execute()
@@ -67,10 +67,7 @@ export const generate = forge
         config.wrapped_vek
       )
 
-      const derivedKey = await deriveWrappingKey(
-        decryptedMaster,
-        saltBase64
-      )
+      const derivedKey = await deriveWrappingKey(decryptedMaster, saltBase64)
 
       const vek = decryptVEKWithKey(encryptedDataBase64, derivedKey)
 

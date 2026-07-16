@@ -1,10 +1,11 @@
-import crypto, { randomUUID } from 'node:crypto'
+import crypto from 'node:crypto'
 import z from 'zod'
 
-import type { IPBService } from '@lifeforge/server-utils'
+import type { IPBService } from '@lifeforge/pocketbase'
 
 import forge from '../forge'
 import schema from '../schema'
+import { challenge } from '../utils/challenge'
 import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
 import { generateAndWrapRecoveryVEK } from '../utils/recoveryHelper'
 import {
@@ -15,12 +16,6 @@ import {
   packWrappedVEK,
   unpackWrappedVEK
 } from '../utils/vekDerivation'
-
-let challenge = randomUUID()
-
-setInterval(() => {
-  challenge = randomUUID()
-}, 1000 * 60)
 
 async function getConfigRecord(pb: IPBService<typeof schema>) {
   const records = await pb.getFullList.collection('config').execute()
@@ -233,30 +228,4 @@ export const updateWrappedVEK = forge
 
       return response.ok({ recovery_key })
     }
-  )
-
-export { challenge as masterChallenge }
-
-export const validateOTP = forge
-  .mutation({
-    description: 'Validate OTP for master password operations',
-    input: {
-      body: z.object({
-        otp: z.string(),
-        otpId: z.string()
-      })
-    },
-    output: {
-      OK: z.boolean()
-    }
-  })
-  .callback(
-    async ({
-      pb,
-      body,
-      core: {
-        validation: { validateOTP }
-      },
-      response
-    }) => response.ok(await validateOTP(pb, body, challenge))
   )
