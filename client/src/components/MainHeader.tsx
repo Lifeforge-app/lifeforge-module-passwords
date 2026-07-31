@@ -5,6 +5,7 @@ import { useCallback } from 'react'
 import { useModuleTranslation } from '@lifeforge/localization'
 import {
   Button,
+  ContextMenu,
   ContextMenuItem,
   Flex,
   ModuleHeader,
@@ -92,32 +93,29 @@ function MainHeader() {
 
   return (
     <ModuleHeader
-      actionButton={
+      trailing={
         vek && (
-          <Flex gap="sm">
-            <Button
-              display={{ base: 'none', lg: 'flex' }}
-              icon="tabler:plus"
-              tProps={{ item: t('items.password') }}
-              onClick={handleCreatePassword}
-            >
-              new
-            </Button>
-          </Flex>
-        )
-      }
-      contextMenuProps={{
-        styles: {
-          menu: { minWidth: '18em' }
-        },
-        children: (
           <>
-            <ContextMenuItem
-              icon="tabler:file-export"
-              label="exportToCsv"
-              onClick={handleExport}
-            />
-            {vek && (
+            <Flex gap="sm">
+              <Button
+                display={{ base: 'none', lg: 'flex' }}
+                icon="tabler:plus"
+                tProps={{ item: t('items.password') }}
+                onClick={handleCreatePassword}
+              >
+                new
+              </Button>
+            </Flex>
+            <ContextMenu
+              componentProps={{
+                menu: { minWidth: '18em' }
+              }}
+            >
+              <ContextMenuItem
+                icon="tabler:file-export"
+                label="exportToCsv"
+                onClick={handleExport}
+              />
               <ContextMenuItem
                 icon="tabler:key"
                 label="rotateMasterPassword"
@@ -125,10 +123,10 @@ function MainHeader() {
                   open(RotateMasterPasswordModal, { vek })
                 }}
               />
-            )}
+            </ContextMenu>
           </>
         )
-      }}
+      }
     />
   )
 }

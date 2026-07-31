@@ -68,7 +68,6 @@ function PasswordActions({
       <Button
         display={{ base: 'none', sm: 'flex' }}
         icon={decryptedPassword === null ? 'tabler:eye' : 'tabler:eye-off'}
-        iconStyle={{ width: '1.5em', height: '1.5em' }}
         loading={decryptLoading}
         p="sm"
         variant="plain"
