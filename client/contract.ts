@@ -135,8 +135,7 @@ export const contract = {
             "recovery_key"
           ],
           "additionalProperties": false
-        },
-        "UNAUTHORIZED": true
+        }
       }
     },
     "verify": {
@@ -201,7 +200,14 @@ export const contract = {
               "type": "string"
             },
             "category": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "rotation_interval": {
               "type": "number"
@@ -214,7 +220,6 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "category",
             "rotation_interval"
           ],
           "additionalProperties": false
@@ -239,6 +244,11 @@ export const contract = {
           "items": {
             "type": "object",
             "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
               "name": {
                 "type": "string"
               },
@@ -261,31 +271,37 @@ export const contract = {
                 "type": "boolean"
               },
               "category": {
-                "type": "string"
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "last_password_updated": {
-                "type": "string"
+                "type": "string",
+                "format": "date-time"
               },
               "rotation_interval": {
-                "type": "number"
+                "type": "integer",
+                "minimum": -2147483648,
+                "maximum": 2147483647
               },
               "created": {
-                "type": "string"
+                "type": "string",
+                "format": "date-time"
               },
               "updated": {
-                "type": "string"
-              },
-              "id": {
-                "type": "string"
-              },
-              "collectionId": {
-                "type": "string"
-              },
-              "collectionName": {
-                "type": "string"
+                "type": "string",
+                "format": "date-time"
               }
             },
             "required": [
+              "id",
               "name",
               "website",
               "username",
@@ -297,10 +313,7 @@ export const contract = {
               "last_password_updated",
               "rotation_interval",
               "created",
-              "updated",
-              "id",
-              "collectionId",
-              "collectionName"
+              "updated"
             ],
             "additionalProperties": false
           }
@@ -330,8 +343,7 @@ export const contract = {
         }
       },
       "output": {
-        "NO_CONTENT": true,
-        "NOT_FOUND": true
+        "NO_CONTENT": true
       }
     },
     "togglePin": {
@@ -357,8 +369,7 @@ export const contract = {
         }
       },
       "output": {
-        "NO_CONTENT": true,
-        "NOT_FOUND": true
+        "NO_CONTENT": true
       }
     },
     "update": {
@@ -405,7 +416,14 @@ export const contract = {
               "type": "string"
             },
             "category": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "rotation_interval": {
               "type": "number"
@@ -421,15 +439,13 @@ export const contract = {
             "password",
             "icon",
             "color",
-            "category",
             "rotation_interval"
           ],
           "additionalProperties": false
         }
       },
       "output": {
-        "NO_CONTENT": true,
-        "NOT_FOUND": true
+        "NO_CONTENT": true
       }
     }
   },
@@ -469,6 +485,11 @@ export const contract = {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
             "name": {
               "type": "string"
             },
@@ -477,28 +498,16 @@ export const contract = {
             },
             "icon": {
               "type": "string"
-            },
-            "id": {
-              "type": "string"
-            },
-            "collectionId": {
-              "type": "string"
-            },
-            "collectionName": {
-              "type": "string"
             }
           },
           "required": [
+            "id",
             "name",
             "color",
-            "icon",
-            "id",
-            "collectionId",
-            "collectionName"
+            "icon"
           ],
           "additionalProperties": false
-        },
-        "CONFLICT": true
+        }
       }
     },
     "list": {
@@ -516,6 +525,9 @@ export const contract = {
           "items": {
             "type": "object",
             "properties": {
+              "id": {
+                "type": "string"
+              },
               "name": {
                 "type": "string"
               },
@@ -527,25 +539,14 @@ export const contract = {
               },
               "amount": {
                 "type": "number"
-              },
-              "id": {
-                "type": "string"
-              },
-              "collectionId": {
-                "type": "string"
-              },
-              "collectionName": {
-                "type": "string"
               }
             },
             "required": [
+              "id",
               "name",
               "color",
               "icon",
-              "amount",
-              "id",
-              "collectionId",
-              "collectionName"
+              "amount"
             ],
             "additionalProperties": false
           }
@@ -578,8 +579,7 @@ export const contract = {
         "OK": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "boolean"
-        },
-        "NOT_FOUND": true
+        }
       }
     },
     "update": {
@@ -630,6 +630,11 @@ export const contract = {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
             "name": {
               "type": "string"
             },
@@ -638,29 +643,16 @@ export const contract = {
             },
             "icon": {
               "type": "string"
-            },
-            "id": {
-              "type": "string"
-            },
-            "collectionId": {
-              "type": "string"
-            },
-            "collectionName": {
-              "type": "string"
             }
           },
           "required": [
+            "id",
             "name",
             "color",
-            "icon",
-            "id",
-            "collectionId",
-            "collectionName"
+            "icon"
           ],
           "additionalProperties": false
-        },
-        "CONFLICT": true,
-        "NOT_FOUND": true
+        }
       }
     }
   },
@@ -700,8 +692,7 @@ export const contract = {
             "recovery_key"
           ],
           "additionalProperties": false
-        },
-        "UNAUTHORIZED": true
+        }
       }
     },
     "recover": {
@@ -731,11 +722,7 @@ export const contract = {
         }
       },
       "output": {
-        "NO_CONTENT": true,
-        "BAD_REQUEST": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "string"
-        }
+        "NO_CONTENT": true
       }
     },
     "status": {

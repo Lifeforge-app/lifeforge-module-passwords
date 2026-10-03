@@ -1,54 +1,67 @@
+import { count, eq } from 'drizzle-orm'
+import { createSelectSchema } from 'drizzle-orm/zod'
 import z from 'zod'
 
-import { schemaWithPB } from '@lifeforge/pocketbase'
-
 import forge from '../forge'
-import passwordsSchemas from '../schema'
+import { passwordCategories, passwordEntries } from '../schema.drizzle'
+
+const categoryDto = createSelectSchema(passwordCategories)
+
+const categoryAggregateDto = z.object({
+  id: z.string(),
+  name: z.string(),
+  color: z.string(),
+  icon: z.string(),
+  amount: z.number()
+})
+
+const categoryInputDto = z.object({
+  name: z.string(),
+  icon: z.string(),
+  color: z.string()
+})
 
 export const list = forge
   .query({
     description: 'Get the list of password categories',
     output: {
-      OK: z.array(passwordsSchemas.categories_aggregated)
+      OK: z.array(categoryAggregateDto)
     }
   })
-  .callback(async function ({ pb, response }) {
-    const result = await pb.getFullList
-      .collection('categories_aggregated')
-      .execute()
+  .callback(async ({ db, response }) => {
+    const rows = await db
+      .select({
+        id: passwordCategories.id,
+        name: passwordCategories.name,
+        color: passwordCategories.color,
+        icon: passwordCategories.icon,
+        amount: count(passwordEntries.id)
+      })
+      .from(passwordCategories)
+      .leftJoin(
+        passwordEntries,
+        eq(passwordEntries.category, passwordCategories.id)
+      )
+      .groupBy(passwordCategories.id)
 
-    return response.ok(result)
+    return response.ok(rows)
   })
 
 export const create = forge
   .mutation({
     description: 'Create a new password category',
     input: {
-      body: passwordsSchemas.categories.pick({
-        name: true,
-        icon: true,
-        color: true
-      })
+      body: categoryInputDto
     },
     output: {
-      CREATED: passwordsSchemas.categories,
-      CONFLICT: true
+      CREATED: categoryDto
     }
   })
-  .callback(async function ({ pb, body, response }) {
-    let existingCategory = null
-
-    existingCategory = await pb.getFirstListItem
-      .collection('categories')
-      .filter([{ field: 'name', operator: '=', value: body.name }])
-      .execute()
-      .catch(() => {})
-
-    if (existingCategory) {
-      return response.conflict()
-    }
-
-    const result = await pb.create.collection('categories').data(body).execute()
+  .callback(async ({ db, body, response }) => {
+    const [result] = await db
+      .insert(passwordCategories)
+      .values(body)
+      .returning()
 
     return response.created(result)
   })
@@ -58,46 +71,20 @@ export const update = forge
     description: 'Update an existing password category',
     input: {
       query: z.object({
-        id: z.string()
+        id: forge.existsIn(z.string(), passwordCategories)
       }),
-      body: passwordsSchemas.categories.pick({
-        name: true,
-        icon: true,
-        color: true
-      })
-    },
-    existenceCheck: {
-      query: {
-        id: 'categories'
-      }
+      body: categoryInputDto
     },
     output: {
-      OK: schemaWithPB(passwordsSchemas.categories),
-      CONFLICT: true,
-      NOT_FOUND: true
+      OK: categoryDto
     }
   })
-  .callback(async function ({ pb, query: { id }, body, response }) {
-    let existingCategory = null
-
-    existingCategory = await pb.getFirstListItem
-      .collection('categories')
-      .filter([
-        { field: 'name', operator: '=', value: body.name },
-        { field: 'id', operator: '!=', value: id }
-      ])
-      .execute()
-      .catch(() => {})
-
-    if (existingCategory) {
-      return response.conflict()
-    }
-
-    const result = await pb.update
-      .collection('categories')
-      .id(id)
-      .data(body)
-      .execute()
+  .callback(async ({ db, query: { id }, body, response }) => {
+    const [result] = await db
+      .update(passwordCategories)
+      .set(body)
+      .where(eq(passwordCategories.id, id))
+      .returning()
 
     return response.ok(result)
   })
@@ -107,21 +94,15 @@ export const remove = forge
     description: 'Delete a password category',
     input: {
       query: z.object({
-        id: z.string()
+        id: forge.existsIn(z.string(), passwordCategories)
       })
     },
-    existenceCheck: {
-      query: {
-        id: 'categories'
-      }
-    },
     output: {
-      OK: z.boolean(),
-      NOT_FOUND: true
+      OK: z.boolean()
     }
   })
-  .callback(async function ({ pb, query: { id }, response }) {
-    const result = await pb.delete.collection('categories').id(id).execute()
+  .callback(async ({ db, query: { id }, response }) => {
+    await db.delete(passwordCategories).where(eq(passwordCategories.id, id))
 
-    return response.ok(result)
+    return response.ok(true)
   })

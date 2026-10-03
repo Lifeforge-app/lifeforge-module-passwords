@@ -38,7 +38,7 @@ export default function useDecryptPassword(encryptedPassword: string) {
       toast.error(t('toasts.decryptFailed'))
       setDecryptedPassword(null)
     }
-  }, [vek, encryptedPassword])
+  }, [vek, encryptedPassword, decryptedPassword])
 
   return { decryptedPassword, toggleDecrypt, setDecryptedPassword }
 }

@@ -1,10 +1,12 @@
 import crypto from 'node:crypto'
+import { eq } from 'drizzle-orm'
 import z from 'zod'
 
-import type { IPBService } from '@lifeforge/pocketbase'
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import type { BuiltModuleSchema } from '@lifeforge/drizzle'
 
-import forge from '../forge'
-import schema from '../schema'
+import forge, { type PasswordsSchema } from '../forge'
+import { passwordConfig } from '../schema.drizzle'
 import { challenge } from '../utils/challenge'
 import { hash, verify as verifyPasswordHash } from '../utils/passwordHash'
 import { generateAndWrapRecoveryVEK } from '../utils/recoveryHelper'
@@ -17,10 +19,10 @@ import {
   unpackWrappedVEK
 } from '../utils/vekDerivation'
 
-async function getConfigRecord(pb: IPBService<typeof schema>) {
-  const records = await pb.getFullList.collection('config').execute()
+type PasswordsDb = PostgresJsDatabase<BuiltModuleSchema<PasswordsSchema>>
 
-  return records[0] || null
+async function getConfigRecord(db: PasswordsDb) {
+  return (await db.query.config.findFirst()) ?? null
 }
 
 export const hasMasterPassword = forge
@@ -30,8 +32,8 @@ export const hasMasterPassword = forge
       OK: z.boolean()
     }
   })
-  .callback(async ({ pb, response }) => {
-    const config = await getConfigRecord(pb)
+  .callback(async ({ db, response }) => {
+    const config = await getConfigRecord(db)
 
     return response.ok(!!config?.master_hash)
   })
@@ -61,7 +63,7 @@ export const create = forge
   })
   .callback(
     async ({
-      pb,
+      db,
       body: { password },
       core: {
         crypto: { decrypt2 }
@@ -82,7 +84,7 @@ export const create = forge
       const { recovery_key, recovery_wrapped_vek } =
         generateAndWrapRecoveryVEK(vek)
 
-      const existing = await getConfigRecord(pb)
+      const existing = await getConfigRecord(db)
 
       const data = {
         master_hash,
@@ -91,13 +93,12 @@ export const create = forge
       }
 
       if (existing) {
-        await pb.update
-          .collection('config')
-          .id(existing.id)
-          .data(data)
-          .execute()
+        await db
+          .update(passwordConfig)
+          .set(data)
+          .where(eq(passwordConfig.id, existing.id))
       } else {
-        await pb.create.collection('config').data(data).execute()
+        await db.insert(passwordConfig).values(data)
       }
 
       return response.created({ recovery_key })
@@ -118,7 +119,7 @@ export const verify = forge
   })
   .callback(
     async ({
-      pb,
+      db,
       body: { password },
       core: {
         crypto: { decrypt2 }
@@ -127,7 +128,7 @@ export const verify = forge
     }) => {
       const decryptedMaster = decrypt2(password, challenge)
 
-      const config = await getConfigRecord(pb)
+      const config = await getConfigRecord(db)
 
       if (!config) {
         return response.ok(false)
@@ -151,8 +152,8 @@ export const getWrappedVEK = forge
       })
     }
   })
-  .callback(async ({ pb, response }) => {
-    const config = await getConfigRecord(pb)
+  .callback(async ({ db, response }) => {
+    const config = await getConfigRecord(db)
 
     return response.ok({
       wrapped_vek: config?.wrapped_vek || ''
@@ -173,13 +174,12 @@ export const updateWrappedVEK = forge
     output: {
       OK: z.object({
         recovery_key: z.string()
-      }),
-      UNAUTHORIZED: true
+      })
     }
   })
   .callback(
     async ({
-      pb,
+      db,
       body: { password, new_password, new_wrapped_vek },
       core: {
         crypto: { decrypt2 }
@@ -189,7 +189,7 @@ export const updateWrappedVEK = forge
       const decryptedMaster = decrypt2(password, challenge)
       const decryptedNewMaster = decrypt2(new_password, challenge)
 
-      const config = await getConfigRecord(pb)
+      const config = await getConfigRecord(db)
 
       if (!config) {
         return response.unauthorized()
@@ -216,15 +216,14 @@ export const updateWrappedVEK = forge
       const { recovery_key, recovery_wrapped_vek } =
         generateAndWrapRecoveryVEK(vek)
 
-      await pb.update
-        .collection('config')
-        .id(config.id)
-        .data({
+      await db
+        .update(passwordConfig)
+        .set({
           master_hash: new_master_hash,
           wrapped_vek: new_wrapped_vek,
           recovery_wrapped_vek
         })
-        .execute()
+        .where(eq(passwordConfig.id, config.id))
 
       return response.ok({ recovery_key })
     }

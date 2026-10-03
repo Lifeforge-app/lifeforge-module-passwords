@@ -1,48 +1,55 @@
-import dayjs from 'dayjs'
+import { asc, desc, eq } from 'drizzle-orm'
+import { createSelectSchema } from 'drizzle-orm/zod'
 import z from 'zod'
 
 import forge from '../forge'
-import passwordsSchemas from '../schema'
+import { passwordEntries } from '../schema.drizzle'
+
+const entryDto = createSelectSchema(passwordEntries)
+
+const entryInputDto = z.object({
+  name: z.string(),
+  website: z.string(),
+  username: z.string(),
+  password: z.string(),
+  icon: z.string(),
+  color: z.string(),
+  category: z.string().nullable().optional(),
+  rotation_interval: z.number()
+})
 
 export const list = forge
   .query({
     description: 'Get all password entries with sorting',
     output: {
-      OK: z.array(passwordsSchemas.entries)
+      OK: z.array(entryDto)
     }
   })
-  .callback(async ({ pb, response }) =>
-    response.ok(
-      await pb.getFullList
-        .collection('entries')
-        .sort(['-pinned', 'name'])
-        .execute()
-    )
-  )
+  .callback(async ({ db, response }) => {
+    const rows = await db
+      .select()
+      .from(passwordEntries)
+      .orderBy(desc(passwordEntries.pinned), asc(passwordEntries.name))
+
+    return response.ok(rows)
+  })
 
 export const create = forge
   .mutation({
     description: 'Create a new password entry with pre-encrypted password',
     input: {
-      body: passwordsSchemas.entries.omit({
-        pinned: true,
-        created: true,
-        updated: true,
-        last_password_updated: true,
-        collectionId: true,
-        id: true,
-        collectionName: true
-      })
+      body: entryInputDto
     },
     output: {
       NO_CONTENT: true
     }
   })
-  .callback(async ({ pb, body, response }) => {
-    await pb.create
-      .collection('entries')
-      .data({ ...body, last_password_updated: dayjs().toDate() })
-      .execute()
+  .callback(async ({ db, body, response }) => {
+    await db.insert(passwordEntries).values({
+      ...body,
+      category: body.category || null,
+      last_password_updated: new Date()
+    })
 
     return response.noContent()
   })
@@ -52,40 +59,28 @@ export const update = forge
     description: 'Update an existing password entry',
     input: {
       query: z.object({
-        id: z.string()
+        id: forge.existsIn(z.string(), passwordEntries)
       }),
-      body: passwordsSchemas.entries
-        .omit({
-          pinned: true,
-          created: true,
-          updated: true,
-          collectionId: true,
-          last_password_updated: true,
-          id: true,
-          collectionName: true
-        })
-        .extend({
-          password_changed: z.boolean().optional()
-        })
-    },
-    existenceCheck: {
-      query: { id: 'entries' }
+      body: entryInputDto.extend({
+        password_changed: z.boolean().optional()
+      })
     },
     output: {
-      NO_CONTENT: true,
-      NOT_FOUND: true
+      NO_CONTENT: true
     }
   })
-  .callback(async ({ pb, query: { id }, body, response }) => {
+  .callback(async ({ db, query: { id }, body, response }) => {
     const { password_changed, ...rest } = body
 
-    const data: Record<string, unknown> = { ...rest }
-
-    if (password_changed) {
-      data.last_password_updated = new Date().toISOString()
-    }
-
-    await pb.update.collection('entries').id(id).data(data).execute()
+    await db
+      .update(passwordEntries)
+      .set({
+        ...rest,
+        category: rest.category || null,
+        updated: new Date(),
+        ...(password_changed ? { last_password_updated: new Date() } : {})
+      })
+      .where(eq(passwordEntries.id, id))
 
     return response.noContent()
   })
@@ -95,19 +90,15 @@ export const remove = forge
     description: 'Delete a password entry',
     input: {
       query: z.object({
-        id: z.string()
+        id: forge.existsIn(z.string(), passwordEntries)
       })
     },
-    existenceCheck: {
-      query: { id: 'entries' }
-    },
     output: {
-      NO_CONTENT: true,
-      NOT_FOUND: true
+      NO_CONTENT: true
     }
   })
-  .callback(async ({ pb, query: { id }, response }) => {
-    await pb.delete.collection('entries').id(id).execute()
+  .callback(async ({ db, query: { id }, response }) => {
+    await db.delete(passwordEntries).where(eq(passwordEntries.id, id))
 
     return response.noContent()
   })
@@ -117,27 +108,20 @@ export const togglePin = forge
     description: 'Toggle pin status of a password entry',
     input: {
       query: z.object({
-        id: z.string()
+        id: forge.existsIn(z.string(), passwordEntries)
       })
-    },
-    existenceCheck: {
-      query: { id: 'entries' }
     },
     output: {
-      NO_CONTENT: true,
-      NOT_FOUND: true
+      NO_CONTENT: true
     }
   })
-  .callback(async ({ pb, query: { id }, response }) => {
-    const entry = await pb.getOne.collection('entries').id(id).execute()
+  .callback(async ({ db, query: { id }, response }) => {
+    const entry = (await db.query.entries.findFirst({ where: { id } }))!
 
-    await pb.update
-      .collection('entries')
-      .id(id)
-      .data({
-        pinned: !entry.pinned
-      })
-      .execute()
+    await db
+      .update(passwordEntries)
+      .set({ pinned: !entry.pinned, updated: new Date() })
+      .where(eq(passwordEntries.id, id))
 
     return response.noContent()
   })
