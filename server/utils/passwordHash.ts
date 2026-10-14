@@ -32,6 +32,8 @@ export async function verify(
   const saltB64 = parts[4]
   const expectedHashB64 = parts[5]
 
+  if (!saltB64 || !expectedHashB64) return false
+
   const salt = base64NoPaddingToUint8Array(saltB64)
   const expectedHash = base64NoPaddingToUint8Array(expectedHashB64)
 

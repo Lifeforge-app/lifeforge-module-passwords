@@ -63,6 +63,10 @@ export const create = forge
       .values(body)
       .returning()
 
+    if (!result) {
+      return response.badRequest('Failed to create password category')
+    }
+
     return response.created(result)
   })
 
@@ -85,6 +89,10 @@ export const update = forge
       .set(body)
       .where(eq(passwordCategories.id, id))
       .returning()
+
+    if (!result) {
+      return response.notFound()
+    }
 
     return response.ok(result)
   })
