@@ -118,8 +118,8 @@ function ContentContainer({ masterPassword }: { masterPassword: string }) {
                 />
               ) : (
                 <Box asChild mt="lg">
-                  <Scrollbar>
-                    <Stack mb="xl" p="sm">
+                  <Scrollbar pb={{ base: 'xl', lg: 'none' }}>
+                    <Stack p="sm">
                       {filteredPasswordList.map(password => (
                         <PasswordEntryItem
                           key={password.id}
