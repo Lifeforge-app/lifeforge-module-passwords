@@ -55,8 +55,14 @@ function RecoverAccountModal({ onClose }: { onClose: () => void }) {
         handler: async data => {
           const challenge = await forgeAPI.master.getChallenge.query()
 
-          const encryptedRecoveryKey = forgeEncrypt(data.recoveryKey, challenge)
-          const encryptedNewPassword = forgeEncrypt(data.newPassword, challenge)
+          const encryptedRecoveryKey = await forgeEncrypt(
+            data.recoveryKey,
+            challenge
+          )
+          const encryptedNewPassword = await forgeEncrypt(
+            data.newPassword,
+            challenge
+          )
 
           await mutation.mutateAsync({
             recovery_key: encryptedRecoveryKey,

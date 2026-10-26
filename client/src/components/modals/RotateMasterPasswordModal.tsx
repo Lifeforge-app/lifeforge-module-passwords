@@ -88,11 +88,14 @@ function RotateMasterPasswordModal({
         handler: async data => {
           const challenge = await forgeAPI.master.getChallenge.query()
 
-          const encryptedOldMaster = forgeEncrypt(
+          const encryptedOldMaster = await forgeEncrypt(
             data.existingPassword,
             challenge
           )
-          const encryptedNewMaster = forgeEncrypt(data.newPassword, challenge)
+          const encryptedNewMaster = await forgeEncrypt(
+            data.newPassword,
+            challenge
+          )
 
           const vekBytes = await crypto.subtle.exportKey('raw', vek)
           const newWrappedVEK = await wrapVEK(vekBytes, data.newPassword)

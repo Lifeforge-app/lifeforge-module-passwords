@@ -1,8 +1,8 @@
-import crypto from 'node:crypto'
 import { eq } from 'drizzle-orm'
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import crypto from 'node:crypto'
 import z from 'zod'
 
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { BuiltModuleSchema } from '@lifeforge/drizzle'
 
 import forge, { type PasswordsSchema } from '../forge'
@@ -43,11 +43,11 @@ export const generate = forge
       db,
       body: { password },
       core: {
-        crypto: { decrypt2 }
+        crypto: { decrypt }
       },
       response
     }) => {
-      const decryptedMaster = decrypt2(password, challenge)
+      const decryptedMaster = decrypt(password, challenge)
 
       const config = await getConfigRecord(db)
 
@@ -145,12 +145,12 @@ export const recover = forge
       db,
       body: { recovery_key, new_password },
       core: {
-        crypto: { decrypt2 }
+        crypto: { decrypt }
       },
       response
     }) => {
-      const decryptedRecoveryKey = decrypt2(recovery_key, challenge)
-      const decryptedNewPassword = decrypt2(new_password, challenge)
+      const decryptedRecoveryKey = decrypt(recovery_key, challenge)
+      const decryptedNewPassword = decrypt(new_password, challenge)
 
       const config = await getConfigRecord(db)
 

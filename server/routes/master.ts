@@ -1,8 +1,8 @@
-import crypto from 'node:crypto'
 import { eq } from 'drizzle-orm'
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import crypto from 'node:crypto'
 import z from 'zod'
 
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { BuiltModuleSchema } from '@lifeforge/drizzle'
 
 import forge, { type PasswordsSchema } from '../forge'
@@ -66,11 +66,11 @@ export const create = forge
       db,
       body: { password },
       core: {
-        crypto: { decrypt2 }
+        crypto: { decrypt }
       },
       response
     }) => {
-      const decryptedMaster = decrypt2(password, challenge)
+      const decryptedMaster = decrypt(password, challenge)
 
       const master_hash = await hash(decryptedMaster)
 
@@ -122,11 +122,11 @@ export const verify = forge
       db,
       body: { password },
       core: {
-        crypto: { decrypt2 }
+        crypto: { decrypt }
       },
       response
     }) => {
-      const decryptedMaster = decrypt2(password, challenge)
+      const decryptedMaster = decrypt(password, challenge)
 
       const config = await getConfigRecord(db)
 
@@ -182,12 +182,12 @@ export const updateWrappedVEK = forge
       db,
       body: { password, new_password, new_wrapped_vek },
       core: {
-        crypto: { decrypt2 }
+        crypto: { decrypt }
       },
       response
     }) => {
-      const decryptedMaster = decrypt2(password, challenge)
-      const decryptedNewMaster = decrypt2(new_password, challenge)
+      const decryptedMaster = decrypt(password, challenge)
+      const decryptedNewMaster = decrypt(new_password, challenge)
 
       const config = await getConfigRecord(db)
 
