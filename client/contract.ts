@@ -1,755 +1,321 @@
-export const contract = {
-  "master": {
-    "create": {
-      "method": "post",
-      "description": "Create a new master password",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "password": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "password"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "CREATED": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "recovery_key": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "recovery_key"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "getChallenge": {
-      "method": "get",
-      "description": "Retrieve challenge token for master password authentication",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "string"
-        }
-      }
-    },
-    "getWrappedVEK": {
-      "method": "get",
-      "description": "Get the wrapped VEK for the authenticated user",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "wrapped_vek": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "wrapped_vek"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "hasMasterPassword": {
-      "method": "get",
-      "description": "Check if a master password has been configured",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "boolean"
-        }
-      }
-    },
-    "updateWrappedVEK": {
-      "method": "post",
-      "description": "Update the wrapped VEK (used during master password rotation)",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "password": {
-              "type": "string"
-            },
-            "new_password": {
-              "type": "string"
-            },
-            "new_wrapped_vek": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "password",
-            "new_password",
-            "new_wrapped_vek"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "recovery_key": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "recovery_key"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "verify": {
-      "method": "post",
-      "description": "Verify master password against stored hash",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "password": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "password"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "boolean"
-        }
-      }
-    }
-  },
-  "entries": {
-    "create": {
-      "method": "post",
-      "description": "Create a new password entry with pre-encrypted password",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "website": {
-              "type": "string"
-            },
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "icon": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            },
-            "category": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "rotation_interval": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "name",
-            "website",
-            "username",
-            "password",
-            "icon",
-            "color",
-            "rotation_interval"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "NO_CONTENT": true
-      }
-    },
-    "list": {
-      "method": "get",
-      "description": "Get all password entries with sorting",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "name": {
-                "type": "string"
-              },
-              "website": {
-                "type": "string"
-              },
-              "username": {
-                "type": "string"
-              },
-              "password": {
-                "type": "string"
-              },
-              "icon": {
-                "type": "string"
-              },
-              "color": {
-                "type": "string"
-              },
-              "pinned": {
-                "type": "boolean"
-              },
-              "category": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "last_password_updated": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "rotation_interval": {
-                "type": "integer",
-                "minimum": -2147483648,
-                "maximum": 2147483647
-              },
-              "created": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "updated": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "id",
-              "name",
-              "website",
-              "username",
-              "password",
-              "icon",
-              "color",
-              "pinned",
-              "category",
-              "last_password_updated",
-              "rotation_interval",
-              "created",
-              "updated"
-            ],
-            "additionalProperties": false
-          }
-        }
-      }
-    },
-    "remove": {
-      "method": "post",
-      "description": "Delete a password entry",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "query": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "NO_CONTENT": true
-      }
-    },
-    "togglePin": {
-      "method": "post",
-      "description": "Toggle pin status of a password entry",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "query": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "NO_CONTENT": true
-      }
-    },
-    "update": {
-      "method": "post",
-      "description": "Update an existing password entry",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "query": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "additionalProperties": false
-        },
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "website": {
-              "type": "string"
-            },
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "icon": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            },
-            "category": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "rotation_interval": {
-              "type": "number"
-            },
-            "password_changed": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "name",
-            "website",
-            "username",
-            "password",
-            "icon",
-            "color",
-            "rotation_interval"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "NO_CONTENT": true
-      }
-    }
-  },
-  "categories": {
-    "create": {
-      "method": "post",
-      "description": "Create a new password category",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "icon": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "name",
-            "icon",
-            "color"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "CREATED": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-            },
-            "name": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            },
-            "icon": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "name",
-            "color",
-            "icon"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "list": {
-      "method": "get",
-      "description": "Get the list of password categories",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "color": {
-                "type": "string"
-              },
-              "icon": {
-                "type": "string"
-              },
-              "amount": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "id",
-              "name",
-              "color",
-              "icon",
-              "amount"
-            ],
-            "additionalProperties": false
-          }
-        }
-      }
-    },
-    "remove": {
-      "method": "post",
-      "description": "Delete a password category",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "query": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "boolean"
-        }
-      }
-    },
-    "update": {
-      "method": "post",
-      "description": "Update an existing password category",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "query": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "additionalProperties": false
-        },
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "icon": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "name",
-            "icon",
-            "color"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-            },
-            "name": {
-              "type": "string"
-            },
-            "color": {
-              "type": "string"
-            },
-            "icon": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "name",
-            "color",
-            "icon"
-          ],
-          "additionalProperties": false
-        }
-      }
-    }
-  },
-  "recovery": {
-    "generate": {
-      "method": "post",
-      "description": "Generate a recovery key that can unlock the VEK",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "password": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "password"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "recovery_key": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "recovery_key"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "recover": {
-      "method": "post",
-      "description": "Recover account using recovery key and set a new master password",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {
-        "body": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "recovery_key": {
-              "type": "string"
-            },
-            "new_password": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "recovery_key",
-            "new_password"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "output": {
-        "NO_CONTENT": true
-      }
-    },
-    "status": {
-      "method": "get",
-      "description": "Check if a recovery key has been configured",
-      "noAuth": false,
-      "encrypted": true,
-      "isDownloadable": false,
-      "media": null,
-      "input": {},
-      "output": {
-        "OK": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "properties": {
-            "has_recovery_key": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "has_recovery_key"
-          ],
-          "additionalProperties": false
-        }
-      }
-    }
-  }
-} as const
+export type EndpointMasterGetChallenge_OutputOK = string;
+export type EndpointMasterHasMasterPassword_OutputOK = boolean;
+export type EndpointMasterVerify_OutputOK = boolean;
+export type EndpointEntriesCreate_OutputNO_CONTENT = void;
+export type EndpointEntriesList_OutputOK = {
+  id: string;
+  name: string;
+  website: string;
+  username: string;
+  password: string;
+  icon: string;
+  color: string;
+  pinned: boolean;
+  category: string | null;
+  last_password_updated: string;
+  rotation_interval: number;
+  created: string;
+  updated: string;
+}[];
+export type EndpointEntriesRemove_OutputNO_CONTENT = void;
+export type EndpointEntriesTogglePin_OutputNO_CONTENT = void;
+export type EndpointEntriesUpdate_OutputNO_CONTENT = void;
+export type EndpointCategoriesList_OutputOK = {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  amount: number;
+}[];
+export type EndpointCategoriesRemove_OutputOK = boolean;
+export type EndpointRecoveryRecover_OutputNO_CONTENT = void;
 
-export default contract
+export interface Contract {
+  master: {
+    create: EndpointMasterCreate;
+    getChallenge: EndpointMasterGetChallenge;
+    getWrappedVEK: EndpointMasterGetWrappedVEK;
+    hasMasterPassword: EndpointMasterHasMasterPassword;
+    updateWrappedVEK: EndpointMasterUpdateWrappedVEK;
+    verify: EndpointMasterVerify;
+  };
+  entries: {
+    create: EndpointEntriesCreate;
+    list: EndpointEntriesList;
+    remove: EndpointEntriesRemove;
+    togglePin: EndpointEntriesTogglePin;
+    update: EndpointEntriesUpdate;
+  };
+  categories: {
+    create: EndpointCategoriesCreate;
+    list: EndpointCategoriesList;
+    remove: EndpointCategoriesRemove;
+    update: EndpointCategoriesUpdate;
+  };
+  recovery: {
+    generate: EndpointRecoveryGenerate;
+    recover: EndpointRecoveryRecover;
+    status: EndpointRecoveryStatus;
+  };
+}
+export interface EndpointMasterCreate {
+  method: "post";
+  input: {
+    body?: EndpointMasterCreate_InputBody;
+  };
+  output: {
+    CREATED: EndpointMasterCreate_OutputCREATED;
+  };
+  media: null;
+}
+export interface EndpointMasterCreate_InputBody {
+  password: string;
+}
+export interface EndpointMasterCreate_OutputCREATED {
+  recovery_key: string;
+}
+export interface EndpointMasterGetChallenge {
+  method: "get";
+  input: {};
+  output: {
+    OK: EndpointMasterGetChallenge_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointMasterGetWrappedVEK {
+  method: "get";
+  input: {};
+  output: {
+    OK: EndpointMasterGetWrappedVEK_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointMasterGetWrappedVEK_OutputOK {
+  wrapped_vek: string;
+}
+export interface EndpointMasterHasMasterPassword {
+  method: "get";
+  input: {};
+  output: {
+    OK: EndpointMasterHasMasterPassword_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointMasterUpdateWrappedVEK {
+  method: "post";
+  input: {
+    body?: EndpointMasterUpdateWrappedVEK_InputBody;
+  };
+  output: {
+    OK: EndpointMasterUpdateWrappedVEK_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointMasterUpdateWrappedVEK_InputBody {
+  password: string;
+  new_password: string;
+  new_wrapped_vek: string;
+}
+export interface EndpointMasterUpdateWrappedVEK_OutputOK {
+  recovery_key: string;
+}
+export interface EndpointMasterVerify {
+  method: "post";
+  input: {
+    body?: EndpointMasterVerify_InputBody;
+  };
+  output: {
+    OK: EndpointMasterVerify_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointMasterVerify_InputBody {
+  password: string;
+}
+export interface EndpointEntriesCreate {
+  method: "post";
+  input: {
+    body?: EndpointEntriesCreate_InputBody;
+  };
+  output: {
+    NO_CONTENT: EndpointEntriesCreate_OutputNO_CONTENT;
+  };
+  media: null;
+}
+export interface EndpointEntriesCreate_InputBody {
+  name: string;
+  website: string;
+  username: string;
+  password: string;
+  icon: string;
+  color: string;
+  category?: string | null;
+  rotation_interval: number;
+}
+export interface EndpointEntriesList {
+  method: "get";
+  input: {};
+  output: {
+    OK: EndpointEntriesList_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointEntriesRemove {
+  method: "post";
+  input: {
+    query?: EndpointEntriesRemove_InputQuery;
+  };
+  output: {
+    NO_CONTENT: EndpointEntriesRemove_OutputNO_CONTENT;
+  };
+  media: null;
+}
+export interface EndpointEntriesRemove_InputQuery {
+  id: string;
+}
+export interface EndpointEntriesTogglePin {
+  method: "post";
+  input: {
+    query?: EndpointEntriesTogglePin_InputQuery;
+  };
+  output: {
+    NO_CONTENT: EndpointEntriesTogglePin_OutputNO_CONTENT;
+  };
+  media: null;
+}
+export interface EndpointEntriesTogglePin_InputQuery {
+  id: string;
+}
+export interface EndpointEntriesUpdate {
+  method: "post";
+  input: {
+    query?: EndpointEntriesUpdate_InputQuery;
+    body?: EndpointEntriesUpdate_InputBody;
+  };
+  output: {
+    NO_CONTENT: EndpointEntriesUpdate_OutputNO_CONTENT;
+  };
+  media: null;
+}
+export interface EndpointEntriesUpdate_InputQuery {
+  id: string;
+}
+export interface EndpointEntriesUpdate_InputBody {
+  name: string;
+  website: string;
+  username: string;
+  password: string;
+  icon: string;
+  color: string;
+  category?: string | null;
+  rotation_interval: number;
+  password_changed?: boolean;
+}
+export interface EndpointCategoriesCreate {
+  method: "post";
+  input: {
+    body?: EndpointCategoriesCreate_InputBody;
+  };
+  output: {
+    CREATED: EndpointCategoriesCreate_OutputCREATED;
+  };
+  media: null;
+}
+export interface EndpointCategoriesCreate_InputBody {
+  name: string;
+  icon: string;
+  color: string;
+}
+export interface EndpointCategoriesCreate_OutputCREATED {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+}
+export interface EndpointCategoriesList {
+  method: "get";
+  input: {};
+  output: {
+    OK: EndpointCategoriesList_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointCategoriesRemove {
+  method: "post";
+  input: {
+    query?: EndpointCategoriesRemove_InputQuery;
+  };
+  output: {
+    OK: EndpointCategoriesRemove_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointCategoriesRemove_InputQuery {
+  id: string;
+}
+export interface EndpointCategoriesUpdate {
+  method: "post";
+  input: {
+    query?: EndpointCategoriesUpdate_InputQuery;
+    body?: EndpointCategoriesUpdate_InputBody;
+  };
+  output: {
+    OK: EndpointCategoriesUpdate_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointCategoriesUpdate_InputQuery {
+  id: string;
+}
+export interface EndpointCategoriesUpdate_InputBody {
+  name: string;
+  icon: string;
+  color: string;
+}
+export interface EndpointCategoriesUpdate_OutputOK {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+}
+export interface EndpointRecoveryGenerate {
+  method: "post";
+  input: {
+    body?: EndpointRecoveryGenerate_InputBody;
+  };
+  output: {
+    OK: EndpointRecoveryGenerate_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointRecoveryGenerate_InputBody {
+  password: string;
+}
+export interface EndpointRecoveryGenerate_OutputOK {
+  recovery_key: string;
+}
+export interface EndpointRecoveryRecover {
+  method: "post";
+  input: {
+    body?: EndpointRecoveryRecover_InputBody;
+  };
+  output: {
+    NO_CONTENT: EndpointRecoveryRecover_OutputNO_CONTENT;
+  };
+  media: null;
+}
+export interface EndpointRecoveryRecover_InputBody {
+  recovery_key: string;
+  new_password: string;
+}
+export interface EndpointRecoveryStatus {
+  method: "get";
+  input: {};
+  output: {
+    OK: EndpointRecoveryStatus_OutputOK;
+  };
+  media: null;
+}
+export interface EndpointRecoveryStatus_OutputOK {
+  has_recovery_key: boolean;
+}
