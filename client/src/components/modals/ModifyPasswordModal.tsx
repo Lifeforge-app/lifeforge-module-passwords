@@ -99,8 +99,6 @@ function ModifyPasswordModal({
       submissionConfig={{
         template: type,
         handler: async data => {
-          if (!vek) return
-
           const encryptedPassword = await encrypt(data.password, vek)
           const passwordChanged =
             type === 'update' &&

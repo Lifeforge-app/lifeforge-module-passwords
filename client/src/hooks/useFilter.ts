@@ -9,7 +9,7 @@ export default function useFilter() {
     category: parseAsString.withDefault('')
   })
 
-  const updateFilter = (key: keyof typeof filter, value: any) => {
+  const updateFilter = (key: keyof typeof filter, value: string | null) => {
     setFilter(prev => ({
       ...prev,
       [key]: value
